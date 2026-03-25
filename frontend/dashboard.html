@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Run Club</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2.5rem 0;
+    }
+
+    .live-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .user-greeting {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="events.html" class="nav-logo">Run<span>Club</span></a>
+    <div class="nav-links">
+      <a href="events.html">Events</a>
+      <a href="dashboard.html" class="active">Dashboard</a>
+      <a href="index.html" id="logout-btn" style="color:var(--danger)">Log out</a>
+    </div>
+  </nav>
+
+  <main class="page">
+
+    <!-- Greeting -->
+    <div class="user-greeting" id="user-greeting">Welcome back</div>
+    <h1 class="page-title">My Dashboard</h1>
+    <p class="page-subtitle">Your runs, your crew.</p>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value" id="stat-joined">—</div>
+        <div class="stat-label">Events Joined</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-upcoming-joined">—</div>
+        <div class="stat-label">Upcoming (Mine)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-all-live">—</div>
+        <div class="stat-label">Live Events</div>
+      </div>
+    </div>
+
+    <!-- My joined events -->
+    <div class="section-header">
+      <div class="section-title">Events I've Joined</div>
+      <a href="events.html" class="btn btn-ghost">Browse all →</a>
+    </div>
+    <div id="my-events-container">
+      <div class="loading"><div class="spinner"></div> Loading…</div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <!-- All live events -->
+    <div class="section-header">
+      <div class="section-title">
+        <span class="live-dot"></span> All Upcoming Events
+      </div>
+    </div>
+    <div id="all-events-container">
+      <div class="loading"><div class="spinner"></div> Loading…</div>
+    </div>
+
+  </main>
+
+  <div id="toast-container"></div>
+
+  <script src="api.js"></script>
+  <script src="dashboard.js"></script>
+  <script>
+    document.getElementById('logout-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.clear();
+      window.location.href = 'index.html';
+    });
+
+    // Greet user if name stored
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.name) {
+      document.getElementById('user-greeting').textContent = `Hey, ${user.name} 👋`;
+    }
+  </script>
+</body>
+</html>

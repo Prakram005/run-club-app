@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Run Club</title>
+</head>
+<body>
+
+<h1>Run Club App</h1>
+
+<h2>Login</h2>
+
+<input id="email" placeholder="Email" />
+<input id="password" placeholder="Password" type="password" />
+<button onclick="login()">Login</button>
+
+<script>
+async function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const res = await fetch("http://localhost:5500/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+
+  console.log(data);
+  alert("Token: " + data.token);
+}
+</script>
+
+</body>
+</html>
