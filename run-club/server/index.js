@@ -16,6 +16,11 @@ const DNS_SERVERS = (process.env.DNS_SERVERS || "8.8.8.8,1.1.1.1")
   .split(",")
   .map((server) => server.trim())
   .filter(Boolean);
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS ||
+  "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173,https://run-club-app.vercel.app")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 let dbReady = false;
 
@@ -25,8 +30,21 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: "https://run-club-app.vercel.app",
-    credentials: true
+    origin(origin, callback) {
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (ALLOWED_ORIGINS.includes(origin)) {
+        return callback(null, true);
+      }
+
+      if (/^https:\/\/.*\.vercel\.app$/.test(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    }
   })
 );
 

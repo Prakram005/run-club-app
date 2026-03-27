@@ -1,4 +1,8 @@
-const BASE_URL = "https://run-club-app.onrender.com";
+const DEFAULT_API_BASE_URL = "https://run-club-app.onrender.com";
+const API_BASE_URL =
+  window.API_BASE_URL ||
+  localStorage.getItem("apiBaseUrl") ||
+  DEFAULT_API_BASE_URL;
 
 function authHeaders() {
   const token = localStorage.getItem("token");
@@ -19,10 +23,18 @@ async function request(path, options = {}) {
     ...(options.headers || {}),
   };
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  let res;
+
+  try {
+    res = await fetch(`${API_BASE_URL}${path}`, {
+      ...options,
+      headers,
+    });
+  } catch (error) {
+    throw new Error(
+      `Cannot reach the API at ${API_BASE_URL}. Check the backend URL, CORS settings, and that the Render service is awake.`
+    );
+  }
 
   const raw = await res.text();
   let data = {};

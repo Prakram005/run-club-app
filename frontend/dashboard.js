@@ -2,7 +2,6 @@
 //  dashboard.js
 // =============================================
 
-import { loginUser } from "./api.js";
 const JOINED_KEY = "joinedEvents";
 
 function getJoined() {
