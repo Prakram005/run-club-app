@@ -19,23 +19,13 @@ const DNS_SERVERS = (process.env.DNS_SERVERS || "8.8.8.8,1.1.1.1")
 
 let dbReady = false;
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
 
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-
-  next();
-});
 
 app.use(express.json());
 
 app.use(
   cors({
-    origin: "http://127.0.0.1:5500",
+    origin: "https://run-club-app.vercel.app",
     credentials: true
   })
 );
