@@ -2,7 +2,7 @@
 //  api.js  —  All API calls in one place
 // =============================================
 
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = "https://run-club-app.onrender.com";
 
 function authHeaders() {
   const token = localStorage.getItem("token");
@@ -75,4 +75,14 @@ const api = {
   // ── My Events (needs real auth later) ─────
   getMyEvents: () =>
     request("/my-events"),
+};
+
+export const loginUser = (data) => {
+  return fetch(`${BASE_URL}/api/users/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+  });
 };

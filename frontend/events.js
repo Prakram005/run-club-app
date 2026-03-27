@@ -4,6 +4,7 @@
 
 // We track joined events in localStorage so the UI
 // persists across refreshes (until real auth is wired up).
+import { loginUser } from "./api.js";
 const JOINED_KEY = "joinedEvents";
 
 function getJoined() {
