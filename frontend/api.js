@@ -1,7 +1,3 @@
-// =============================================
-//  api.js  —  All API calls in one place
-// =============================================
-
 const BASE_URL = "https://run-club-app.onrender.com";
 
 function authHeaders() {
@@ -40,28 +36,21 @@ async function request(path, options = {}) {
   }
 
   if (!res.ok) {
-    if (res.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-    }
-
     throw new Error(data.message || `Request failed: ${res.status}`);
   }
 
   return data;
 }
 
-const api = {
-  // ── Auth ──────────────────────────────────
+// ✅ MAKE IT GLOBAL
+window.api = {
   register: (data) =>
     request("/register", { method: "POST", body: JSON.stringify(data) }),
 
   login: (data) =>
     request("/login", { method: "POST", body: JSON.stringify(data) }),
 
-  // ── Events ────────────────────────────────
-  getEvents: () =>
-    request("/events"),
+  getEvents: () => request("/events"),
 
   createEvent: (data) =>
     request("/create-event", { method: "POST", body: JSON.stringify(data) }),
@@ -72,17 +61,5 @@ const api = {
   leaveEvent: (id) =>
     request(`/leave-event/${id}`, { method: "POST" }),
 
-  // ── My Events (needs real auth later) ─────
-  getMyEvents: () =>
-    request("/my-events"),
-};
-
-export const loginUser = (data) => {
-  return fetch(`${BASE_URL}/api/users/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data)
-  });
+  getMyEvents: () => request("/my-events"),
 };
