@@ -1,4 +1,9 @@
-const DEFAULT_API_BASE_URL = "https://run-club-app.onrender.com";
+const LOCAL_API_BASE_URL = "http://localhost:5000";
+const REMOTE_API_BASE_URL = "https://run-club-app.onrender.com";
+const isLocalPage =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+const DEFAULT_API_BASE_URL = isLocalPage ? LOCAL_API_BASE_URL : REMOTE_API_BASE_URL;
 const API_BASE_URL =
   window.API_BASE_URL ||
   localStorage.getItem("apiBaseUrl") ||

@@ -1,35 +1,45 @@
 // =============================================
-//  dashboard.js
+//  dashboard.js  (Upgraded)
 // =============================================
 
 const JOINED_KEY = "joinedEvents";
 
-function getJoined() {
-  return JSON.parse(localStorage.getItem(JOINED_KEY) || "[]");
+function getJoined()     { return JSON.parse(localStorage.getItem(JOINED_KEY) || "[]"); }
+function saveJoined(arr) { localStorage.setItem(JOINED_KEY, JSON.stringify(arr)); }
+function getCurrentUserId() {
+  return (JSON.parse(localStorage.getItem("user") || "{}")).id || null;
 }
 
-function saveJoined(arr) {
-  localStorage.setItem(JOINED_KEY, JSON.stringify(arr));
+function esc(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function fmtDate(iso) {
+  if (!iso) return "TBD";
+  return new Date(iso).toLocaleDateString("en-IN", {
+    weekday:"short", day:"numeric", month:"short", year:"numeric"
+  });
+}
+function fmtTime(iso) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit" });
 }
 
-// ── Build a single event card ──────────────────
-function buildCard(event, options = {}) {
-  const { showLeave = false, showJoin = false, isPast = false } = options;
-  const count = event.participants ? event.participants.length : 0;
-  const maxSlots = event.maxParticipants || 20;
-  const fillPct = Math.min((count / maxSlots) * 100, 100);
-  const joined = getJoined();
+// ── Build card ───────────────────────────────────
+function buildCard(event, opts = {}) {
+  const { showLeave = false, showJoin = false, isPast = false } = opts;
+
+  const joined   = getJoined();
   const isJoined = joined.includes(event._id);
+  const count    = event.participants?.length ?? 0;
+  const maxSlots = event.maxParticipants || 20;
+  const fillPct  = Math.min((count / maxSlots) * 100, 100);
 
-  const date = event.date
-    ? new Date(event.date).toLocaleDateString("en-IN", {
-        weekday: "short", day: "numeric", month: "short", year: "numeric"
-      })
-    : "TBD";
-
-  const time = event.date
-    ? new Date(event.date).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })
-    : "";
+  let badge = "Open", badgeCls = "badge-upcoming";
+  if (isPast)        { badge = "Past";     badgeCls = "badge-past"; }
+  else if (isJoined) { badge = "✓ Joined"; badgeCls = "badge-joined"; }
 
   const card = document.createElement("div");
   card.className = `event-card${isJoined ? " joined-card" : ""}`;
@@ -37,26 +47,26 @@ function buildCard(event, options = {}) {
 
   card.innerHTML = `
     <div class="event-header">
-      <div class="event-title">${event.title || "Untitled Event"}</div>
-      <span class="event-badge ${isJoined ? "badge-joined" : "badge-upcoming"}">
-        ${isPast ? "Past" : isJoined ? "✓ Joined" : "Open"}
-      </span>
+      <div class="event-title">${esc(event.title) || "Untitled Event"}</div>
+      <span class="event-badge ${badgeCls}">${badge}</span>
     </div>
 
     <div class="event-meta">
       <div class="meta-row">
         <span class="meta-icon">📅</span>
-        <span>${date}${time ? " · " + time : ""}</span>
+        <span>${fmtDate(event.date)}${event.date ? " · " + fmtTime(event.date) : ""}</span>
       </div>
       ${event.location ? `
       <div class="meta-row">
         <span class="meta-icon">📍</span>
-        <span>${event.location}</span>
+        <span>${esc(event.location)}</span>
       </div>` : ""}
       ${event.description ? `
       <div class="meta-row">
         <span class="meta-icon">📝</span>
-        <span>${event.description}</span>
+        <span style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          ${esc(event.description)}
+        </span>
       </div>` : ""}
     </div>
 
@@ -68,17 +78,17 @@ function buildCard(event, options = {}) {
     </div>
 
     <div class="event-footer">
-      ${showLeave && !isPast
-        ? `<button class="btn btn-danger" onclick="leaveEvent('${event._id}', this)">Leave Event</button>`
+      ${showLeave && isJoined && !isPast
+        ? `<button class="btn btn-danger btn-sm" onclick="leaveEvent('${event._id}',this)">Leave Event</button>`
         : ""}
       ${showJoin && !isJoined && !isPast
-        ? `<button class="btn btn-primary" onclick="joinFromDashboard('${event._id}', this)">Join Event</button>`
+        ? `<button class="btn btn-primary btn-sm" onclick="joinFromDashboard('${event._id}',this)">Join Event</button>`
         : ""}
       ${showJoin && isJoined && !isPast
-        ? `<button class="btn btn-joined" disabled>✓ Joined</button>`
+        ? `<button class="btn btn-joined btn-sm" disabled>✓ Joined</button>`
         : ""}
       ${isPast
-        ? `<span style="font-size:0.8rem;color:var(--text-dim)">This run is done.</span>`
+        ? `<span style="font-size:0.78rem;color:var(--text-dim)">This run is done.</span>`
         : ""}
     </div>
   `;
@@ -86,7 +96,7 @@ function buildCard(event, options = {}) {
   return card;
 }
 
-// ── Render: My Joined Events ───────────────────
+// ── Render: My Joined Events ─────────────────────
 function renderMyEvents(events) {
   const container = document.getElementById("my-events-container");
   const now = new Date();
@@ -95,16 +105,16 @@ function renderMyEvents(events) {
     container.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">👟</div>
-        <h3>No events joined yet</h3>
-        <p>Head to <a href="events.html" style="color:var(--accent)">Events</a> and pick a run!</p>
+        <h3>No Events Joined Yet</h3>
+        <p>Head to <a href="events.html">Events</a> and pick a run!</p>
       </div>`;
-    document.getElementById("stat-joined").textContent = 0;
-    document.getElementById("stat-upcoming-joined").textContent = 0;
+    document.getElementById("stat-joined").textContent         = "0";
+    document.getElementById("stat-upcoming-joined").textContent = "0";
     return;
   }
 
   const upcoming = events.filter(e => e.date && new Date(e.date) >= now);
-  document.getElementById("stat-joined").textContent = events.length;
+  document.getElementById("stat-joined").textContent         = events.length;
   document.getElementById("stat-upcoming-joined").textContent = upcoming.length;
 
   const grid = document.createElement("div");
@@ -112,8 +122,8 @@ function renderMyEvents(events) {
 
   events.forEach((event, i) => {
     const isPast = event.date && new Date(event.date) < now;
-    const card = buildCard(event, { showLeave: true, isPast });
-    card.style.animationDelay = `${i * 0.06}s`;
+    const card   = buildCard(event, { showLeave: true, isPast });
+    card.style.animationDelay = `${i * 0.055}s`;
     grid.appendChild(card);
   });
 
@@ -121,7 +131,7 @@ function renderMyEvents(events) {
   container.appendChild(grid);
 }
 
-// ── Render: All Upcoming Events ────────────────
+// ── Render: All Upcoming Events ──────────────────
 function renderAllEvents(events) {
   const container = document.getElementById("all-events-container");
   const now = new Date();
@@ -133,8 +143,8 @@ function renderAllEvents(events) {
     container.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">🗓️</div>
-        <h3>No upcoming events</h3>
-        <p>Be the first — <a href="events.html" style="color:var(--accent)">create one!</a></p>
+        <h3>No Upcoming Events</h3>
+        <p>Be the first — <a href="events.html">create one!</a></p>
       </div>`;
     return;
   }
@@ -144,7 +154,7 @@ function renderAllEvents(events) {
 
   upcoming.forEach((event, i) => {
     const card = buildCard(event, { showJoin: true });
-    card.style.animationDelay = `${i * 0.06}s`;
+    card.style.animationDelay = `${i * 0.055}s`;
     grid.appendChild(card);
   });
 
@@ -152,83 +162,72 @@ function renderAllEvents(events) {
   container.appendChild(grid);
 }
 
-// ── Actions ────────────────────────────────────
-async function leaveEvent(eventId, btn) {
-  btn.disabled = true;
-  btn.textContent = "Leaving…";
+// ── Actions ──────────────────────────────────────
+async function leaveEvent(id, btn) {
+  btn.disabled = true; btn.textContent = "Leaving…";
   try {
-    await api.leaveEvent(eventId);
-    const joined = getJoined().filter(id => id !== eventId);
-    saveJoined(joined);
+    await api.leaveEvent(id);
+    saveJoined(getJoined().filter(x => x !== id));
     showToast("Left the event.", "info");
     loadDashboard();
   } catch {
     showToast("Couldn't leave. Try again.", "error");
-    btn.disabled = false;
-    btn.textContent = "Leave Event";
+    btn.disabled = false; btn.textContent = "Leave Event";
   }
 }
 
-async function joinFromDashboard(eventId, btn) {
-  btn.disabled = true;
-  btn.textContent = "Joining…";
+async function joinFromDashboard(id, btn) {
+  btn.disabled = true; btn.textContent = "Joining…";
   try {
-    await api.joinEvent(eventId);
-    const joined = getJoined();
-    if (!joined.includes(eventId)) { joined.push(eventId); saveJoined(joined); }
+    await api.joinEvent(id);
+    const j = getJoined();
+    if (!j.includes(id)) { j.push(id); saveJoined(j); }
     showToast("You're in! 🏃", "success");
     loadDashboard();
   } catch {
     showToast("Couldn't join. Try again.", "error");
-    btn.disabled = false;
-    btn.textContent = "Join Event";
+    btn.disabled = false; btn.textContent = "Join Event";
   }
 }
 
-// ── Load everything ────────────────────────────
+// ── Load ─────────────────────────────────────────
 async function loadDashboard() {
-  // Reset containers to loading state
-  ["my-events-container", "all-events-container"].forEach(id => {
+  ["my-events-container","all-events-container"].forEach(id => {
     document.getElementById(id).innerHTML =
       `<div class="loading"><div class="spinner"></div> Loading…</div>`;
   });
 
   try {
-    // Fetch all events in one call
     const allEvents = await api.getEvents();
-
-    // My events: filter by joinedEvents in localStorage
-    // (swap with api.getMyEvents() once real auth is done)
-    const joined = getJoined();
-    const myEvents = allEvents.filter(e => joined.includes(e._id));
+    const joined    = getJoined();
+    const myEvents  = allEvents.filter(e => joined.includes(e._id));
 
     renderMyEvents(myEvents);
     renderAllEvents(allEvents);
-  } catch (err) {
-    ["my-events-container", "all-events-container"].forEach(id => {
+  } catch {
+    ["my-events-container","all-events-container"].forEach(id => {
       document.getElementById(id).innerHTML = `
         <div class="empty-state">
           <div class="empty-icon">⚠️</div>
-          <h3>Couldn't load events</h3>
-          <p>Make sure the backend is running on port 5000.</p>
+          <h3>Couldn't Load Events</h3>
+          <p>Check your connection or make sure the backend is running.</p>
         </div>`;
     });
-    document.getElementById("stat-joined").textContent = "—";
-    document.getElementById("stat-upcoming-joined").textContent = "—";
-    document.getElementById("stat-all-live").textContent = "—";
+    ["stat-joined","stat-upcoming-joined","stat-all-live"]
+      .forEach(id => { document.getElementById(id).textContent = "—"; });
   }
 }
 
-// ── Toast ──────────────────────────────────────
+// ── Toast ─────────────────────────────────────────
 function showToast(message, type = "info") {
-  const container = document.getElementById("toast-container");
-  const icons = { success: "✓", error: "✕", info: "ℹ" };
-  const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
-  toast.innerHTML = `<span>${icons[type]}</span> ${message}`;
-  container.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
+  const c = document.getElementById("toast-container");
+  const icons = { success:"✓", error:"✕", info:"ℹ" };
+  const el = document.createElement("div");
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type]}</span> ${message}`;
+  c.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
 }
 
-// ── Init ───────────────────────────────────────
+// ── Init ──────────────────────────────────────────
 loadDashboard();

@@ -6,37 +6,31 @@
   <title>Dashboard — Run Club</title>
   <link rel="stylesheet" href="style.css" />
   <style>
+    /* page-level additions only */
     .section-divider {
       border: none;
       border-top: 1px solid var(--border);
-      margin: 2.5rem 0;
+      margin: 2.75rem 0;
     }
-
     .live-dot {
       display: inline-block;
-      width: 8px; height: 8px;
-      background: var(--accent);
+      width: 7px; height: 7px;
+      background: var(--success);
       border-radius: 50%;
-      margin-right: 6px;
-      animation: pulse 1.5s ease-in-out infinite;
+      margin-right: 5px;
+      animation: livePulse 2s ease-in-out infinite;
     }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.8); }
-    }
-
-    .user-greeting {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      margin-bottom: 0.25rem;
+    @keyframes livePulse {
+      0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(52,217,138,.5); }
+      50%     { opacity:.7; box-shadow: 0 0 0 4px transparent; }
     }
   </style>
 </head>
 <body>
 
+  <!-- ── NAV ── -->
   <nav>
-    <a href="events.html" class="nav-logo">Run<span>Club</span></a>
+    <a href="events.html" class="nav-logo">RUN<span>CLUB</span></a>
     <div class="nav-links">
       <a href="events.html">Events</a>
       <a href="dashboard.html" class="active">Dashboard</a>
@@ -44,9 +38,9 @@
     </div>
   </nav>
 
+  <!-- ── MAIN ── -->
   <main class="page">
 
-    <!-- Greeting -->
     <div class="user-greeting" id="user-greeting">Welcome back</div>
     <h1 class="page-title">My Dashboard</h1>
     <p class="page-subtitle">Your runs, your crew.</p>
@@ -63,14 +57,16 @@
       </div>
       <div class="stat-card">
         <div class="stat-value" id="stat-all-live">—</div>
-        <div class="stat-label">Live Events</div>
+        <div class="stat-label">
+          <span class="live-dot"></span>Live Events
+        </div>
       </div>
     </div>
 
     <!-- My joined events -->
     <div class="section-header">
       <div class="section-title">Events I've Joined</div>
-      <a href="events.html" class="btn btn-ghost">Browse all →</a>
+      <a href="events.html" class="btn btn-ghost btn-sm">Browse all →</a>
     </div>
     <div id="my-events-container">
       <div class="loading"><div class="spinner"></div> Loading…</div>
@@ -78,7 +74,7 @@
 
     <hr class="section-divider" />
 
-    <!-- All live events -->
+    <!-- All upcoming -->
     <div class="section-header">
       <div class="section-title">
         <span class="live-dot"></span> All Upcoming Events
@@ -95,17 +91,22 @@
   <script src="api.js"></script>
   <script src="dashboard.js"></script>
   <script>
-    document.getElementById('logout-btn').addEventListener('click', (e) => {
+    /* auth guard */
+    if (!localStorage.getItem('token')) window.location.href = 'index.html';
+
+    /* logout */
+    document.getElementById('logout-btn').addEventListener('click', e => {
       e.preventDefault();
       localStorage.clear();
       window.location.href = 'index.html';
     });
 
-    // Greet user if name stored
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (user.name) {
-      document.getElementById('user-greeting').textContent = `Hey, ${user.name} 👋`;
+    /* greet user */
+    const _u = JSON.parse(localStorage.getItem('user') || '{}');
+    if (_u.name) {
+      document.getElementById('user-greeting').textContent = `Hey, ${_u.name} 👋`;
     }
   </script>
+
 </body>
 </html>

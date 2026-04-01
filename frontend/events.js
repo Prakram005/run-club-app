@@ -1,30 +1,64 @@
 // =============================================
-//  events.js  —  Events Page Logic
+//  events.js  —  Events Page Logic  (Upgraded)
 // =============================================
 
-// We track joined events in localStorage so the UI
-// persists across refreshes (until real auth is wired up).
 const JOINED_KEY = "joinedEvents";
+let allEventsCache = [];   // cache for search/sort without re-fetching
 
-function getJoined() {
-  return JSON.parse(localStorage.getItem(JOINED_KEY) || "[]");
+function getJoined()    { return JSON.parse(localStorage.getItem(JOINED_KEY) || "[]"); }
+function saveJoined(arr){ localStorage.setItem(JOINED_KEY, JSON.stringify(arr)); }
+function getCurrentUserId() {
+  return (JSON.parse(localStorage.getItem("user") || "{}")).id || null;
 }
 
-function saveJoined(arr) {
-  localStorage.setItem(JOINED_KEY, JSON.stringify(arr));
+/* XSS-safe string */
+function esc(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-// ── Render events ──────────────────────────────
+function fmtDate(iso) {
+  if (!iso) return "TBD";
+  return new Date(iso).toLocaleDateString("en-IN", {
+    weekday:"short", day:"numeric", month:"short", year:"numeric"
+  });
+}
+function fmtTime(iso) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit" });
+}
+
+// ── Render ──────────────────────────────────────
 function renderEvents(events) {
-  const container = document.getElementById("events-container");
-  const joined = getJoined();
+  const container  = document.getElementById("events-container");
+  const joined     = getJoined();
+  const myId       = getCurrentUserId();
+  const searchVal  = (document.getElementById("search-input")?.value || "").toLowerCase();
+  const sortVal    = document.getElementById("sort-select")?.value || "asc";
 
-  if (!events || events.length === 0) {
+  /* filter */
+  let list = events.filter(e =>
+    !searchVal ||
+    (e.title    && e.title.toLowerCase().includes(searchVal)) ||
+    (e.location && e.location.toLowerCase().includes(searchVal))
+  );
+
+  /* sort by date */
+  list.sort((a, b) => {
+    const da = new Date(a.date), db = new Date(b.date);
+    return sortVal === "asc" ? da - db : db - da;
+  });
+
+  if (!list.length) {
     container.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">🏃</div>
-        <h3>No events yet</h3>
-        <p>Check back soon — something's being planned.</p>
+        <h3>${events.length === 0 ? "No events yet" : "Nothing matches"}</h3>
+        <p>${events.length === 0
+          ? 'Be the first — <a href="#" onclick="openCreateModal();return false;">create an event</a>!'
+          : "Try a different search term."}</p>
       </div>`;
     return;
   }
@@ -32,62 +66,60 @@ function renderEvents(events) {
   const grid = document.createElement("div");
   grid.className = "events-grid";
 
-  events.forEach((event, i) => {
+  list.forEach((event, i) => {
     const isJoined = joined.includes(event._id);
-    const count = event.participants ? event.participants.length : 0;
+    const isOwner  = myId && String(event.createdBy) === String(myId);
+    const isPast   = event.date && new Date(event.date) < new Date();
+    const count    = event.participants?.length ?? 0;
     const maxSlots = event.maxParticipants || 20;
-    const fillPct = Math.min((count / maxSlots) * 100, 100);
+    const fillPct  = Math.min((count / maxSlots) * 100, 100);
 
-    const date = event.date
-      ? new Date(event.date).toLocaleDateString("en-IN", {
-          weekday: "short", day: "numeric", month: "short", year: "numeric"
-        })
-      : "TBD";
+    /* badge */
+    let badge = "Open", badgeCls = "badge-upcoming";
+    if (isPast)       { badge = "Past";     badgeCls = "badge-past"; }
+    else if (isOwner) { badge = "⚡ Mine";   badgeCls = "badge-mine"; }
+    else if (isJoined){ badge = "✓ Joined"; badgeCls = "badge-joined"; }
 
     const card = document.createElement("div");
     card.className = `event-card${isJoined ? " joined-card" : ""}`;
-    card.style.animationDelay = `${i * 0.06}s`;
+    card.style.animationDelay = `${i * 0.055}s`;
+    if (isPast) card.style.opacity = "0.55";
 
     card.innerHTML = `
       <div class="event-header">
-        <div class="event-title">${event.title || "Untitled Event"}</div>
-        <span class="event-badge ${isJoined ? "badge-joined" : "badge-upcoming"}">
-          ${isJoined ? "✓ Joined" : "Open"}
-        </span>
+        <div class="event-title">${esc(event.title) || "Untitled Event"}</div>
+        <span class="event-badge ${badgeCls}">${badge}</span>
       </div>
 
       <div class="event-meta">
         <div class="meta-row">
           <span class="meta-icon">📅</span>
-          <span>${date}</span>
+          <span>${fmtDate(event.date)}${event.date ? " · " + fmtTime(event.date) : ""}</span>
         </div>
         ${event.location ? `
         <div class="meta-row">
           <span class="meta-icon">📍</span>
-          <span>${event.location}</span>
-        </div>` : ""}
-        ${event.description ? `
-        <div class="meta-row">
-          <span class="meta-icon">📝</span>
-          <span>${event.description}</span>
+          <span>${esc(event.location)}</span>
         </div>` : ""}
       </div>
+
+      ${event.description
+        ? `<p class="event-description-text">${esc(event.description)}</p>`
+        : ""}
 
       <div class="event-participants">
         <div class="participants-bar">
-          <div class="participants-fill" style="width: ${fillPct}%"></div>
+          <div class="participants-fill" style="width:${fillPct}%"></div>
         </div>
-        <span class="participants-count">${count} joined</span>
+        <span class="participants-count">${count} / ${maxSlots}</span>
       </div>
 
       <div class="event-footer">
-        ${isJoined
-          ? `<button class="btn btn-danger" onclick="leaveEvent('${event._id}', this)">
-               Leave Event
-             </button>`
-          : `<button class="btn btn-primary" onclick="joinEvent('${event._id}', this)">
-               Join Event
-             </button>`
+        ${isPast
+          ? `<span style="font-size:0.78rem;color:var(--text-dim)">This run is done.</span>`
+          : isJoined
+            ? `<button class="btn btn-danger btn-sm" onclick="leaveEvent('${event._id}',this)">Leave</button>`
+            : `<button class="btn btn-primary btn-sm" onclick="joinEvent('${event._id}',this)">Join Event</button>`
         }
       </div>
     `;
@@ -99,83 +131,62 @@ function renderEvents(events) {
   container.appendChild(grid);
 }
 
-// ── Join event ─────────────────────────────────
-async function joinEvent(eventId, btn) {
-  btn.disabled = true;
-  btn.textContent = "Joining…";
-
+// ── Join ────────────────────────────────────────
+async function joinEvent(id, btn) {
+  btn.disabled = true; btn.textContent = "Joining…";
   try {
-    await api.joinEvent(eventId);
-
-    const joined = getJoined();
-    if (!joined.includes(eventId)) {
-      joined.push(eventId);
-      saveJoined(joined);
-    }
-
+    await api.joinEvent(id);
+    const j = getJoined();
+    if (!j.includes(id)) { j.push(id); saveJoined(j); }
     showToast("You're in! See you at the run 🏃", "success");
-    loadEvents(); // refresh list
+    loadEvents();
   } catch (err) {
-    showToast("Couldn't join. Try again.", "error");
-    btn.disabled = false;
-    btn.textContent = "Join Event";
+    showToast(err.message || "Couldn't join. Try again.", "error");
+    btn.disabled = false; btn.textContent = "Join Event";
   }
 }
 
-// ── Leave event ────────────────────────────────
-async function leaveEvent(eventId, btn) {
-  btn.disabled = true;
-  btn.textContent = "Leaving…";
-
+// ── Leave ───────────────────────────────────────
+async function leaveEvent(id, btn) {
+  btn.disabled = true; btn.textContent = "Leaving…";
   try {
-    await api.leaveEvent(eventId);
-
-    const joined = getJoined().filter(id => id !== eventId);
-    saveJoined(joined);
-
+    await api.leaveEvent(id);
+    saveJoined(getJoined().filter(x => x !== id));
     showToast("You've left the event.", "info");
     loadEvents();
   } catch (err) {
     showToast("Couldn't leave. Try again.", "error");
-    btn.disabled = false;
-    btn.textContent = "Leave Event";
+    btn.disabled = false; btn.textContent = "Leave";
   }
 }
 
-// ── Load events from backend ───────────────────
+// ── Load ────────────────────────────────────────
 async function loadEvents() {
-  const container = document.getElementById("events-container");
-  container.innerHTML = `
-    <div class="loading">
-      <div class="spinner"></div>
-      Loading events…
-    </div>`;
-
+  document.getElementById("events-container").innerHTML =
+    `<div class="loading"><div class="spinner"></div> Loading events…</div>`;
   try {
-    const events = await api.getEvents();
-    renderEvents(events);
+    allEventsCache = await api.getEvents();
+    renderEvents(allEventsCache);
   } catch (err) {
-    container.innerHTML = `
+    document.getElementById("events-container").innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">⚠️</div>
         <h3>Couldn't load events</h3>
-        <p>Make sure the backend is running on port 5000.</p>
+        <p>${err.message || "Check your connection and try again."}</p>
       </div>`;
   }
 }
 
-// ── Toast helper ───────────────────────────────
+// ── Toast ────────────────────────────────────────
 function showToast(message, type = "info") {
-  const container = document.getElementById("toast-container");
-  const icons = { success: "✓", error: "✕", info: "ℹ" };
-
-  const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
-  toast.innerHTML = `<span>${icons[type]}</span> ${message}`;
-  container.appendChild(toast);
-
-  setTimeout(() => toast.remove(), 3000);
+  const c = document.getElementById("toast-container");
+  const icons = { success:"✓", error:"✕", info:"ℹ" };
+  const el = document.createElement("div");
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type]}</span> ${message}`;
+  c.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
 }
 
-// ── Init ───────────────────────────────────────
+// ── Init ─────────────────────────────────────────
 loadEvents();
