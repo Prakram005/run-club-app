@@ -1,4 +1,6 @@
 const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -10,11 +12,23 @@ const User = require("./models/User");
 const Event = require("./models/event");
 const auth = require("./middleware/auth");
 
+const chatMessageSchema = new mongoose.Schema(
+  {
+    eventId: { type: mongoose.Schema.Types.ObjectId, ref: "Event", required: true },
+    sender: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    text: { type: String, required: true, maxlength: 1000 }
+  },
+  { timestamps: true }
+);
+
+const ChatMessage = mongoose.models.ChatMessage || mongoose.model("ChatMessage", chatMessageSchema);
+
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 const DNS_SERVERS = (process.env.DNS_SERVERS || "8.8.8.8,1.1.1.1")
   .split(",")
-  .map((server) => server.trim())
+  .map((serverName) => serverName.trim())
   .filter(Boolean);
 const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS ||
   "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173,https://run-club-app.vercel.app")
@@ -24,22 +38,65 @@ const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS ||
 
 let dbReady = false;
 
+function isAllowedOrigin(origin) {
+  return ALLOWED_ORIGINS.includes(origin) || /^https:\/\/.*\.vercel\.app$/.test(origin);
+}
 
+const io = new Server(server, {
+  cors: {
+    origin(origin, callback) {
+      if (!origin || isAllowedOrigin(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked: ${origin}`));
+    },
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
+
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+
+  if (!token) {
+    return next(new Error("No token"));
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret123");
+    socket.userId = decoded.id;
+    socket.userName = decoded.name || "Runner";
+    return next();
+  } catch (error) {
+    return next(new Error("Invalid token"));
+  }
+});
+
+io.on("connection", (socket) => {
+  socket.on("join-room", (eventId) => {
+    socket.join(eventId);
+  });
+
+  socket.on("leave-room", (eventId) => {
+    socket.leave(eventId);
+  });
+
+  socket.on("send-message", ({ room, message }) => {
+    socket.to(room).emit("receive-message", message);
+  });
+
+  socket.on("typing", ({ room, name }) => {
+    socket.to(room).emit("typing", { name });
+  });
+});
 
 app.use(express.json());
 
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin) {
-        return callback(null, true);
-      }
-
-      if (ALLOWED_ORIGINS.includes(origin)) {
-        return callback(null, true);
-      }
-
-      if (/^https:\/\/.*\.vercel\.app$/.test(origin)) {
+      if (!origin || isAllowedOrigin(origin)) {
         return callback(null, true);
       }
 
@@ -57,12 +114,12 @@ function explainMongoError(error) {
     return [
       "MongoDB Atlas SRV lookup failed.",
       "Your current network or DNS resolver is refusing SRV record queries for the Atlas hostname.",
-      "Fix this by either using a different network/DNS, or replacing the `mongodb+srv://...` URI with the standard `mongodb://...` Atlas connection string."
+      "Fix this by either using a different network or replacing mongodb+srv with a standard mongodb connection string."
     ].join(" ");
   }
 
   if (error.name === "MongooseServerSelectionError") {
-    return "MongoDB server selection failed. Check Atlas IP access, database user credentials, and that the cluster is running.";
+    return "MongoDB server selection failed. Check Atlas IP access, credentials, and cluster status.";
   }
 
   return error.message || String(error);
@@ -80,10 +137,7 @@ async function connectToDatabase() {
     console.log(`Using DNS servers for MongoDB SRV lookup: ${DNS_SERVERS.join(", ")}`);
   }
 
-  await mongoose.connect(mongoUri, {
-    serverSelectionTimeoutMS: 10000
-  });
-
+  await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 10000 });
   dbReady = true;
   console.log("MongoDB connected");
 }
@@ -124,22 +178,12 @@ app.post("/register", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = new User({
-      name,
-      email,
-      password: hashedPassword
-    });
-
+    const user = new User({ name, email, password: hashedPassword });
     await user.save();
 
     return res.status(201).json({
       message: "User registered successfully",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email
-      }
+      user: { id: user._id, name: user.name, email: user.email }
     });
   } catch (error) {
     return res.status(500).json({ message: error.message || "Failed to register user" });
@@ -165,15 +209,13 @@ app.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ id: user._id }, "secret123", { expiresIn: "1h" });
+    const token = jwt.sign({ id: user._id, name: user.name }, process.env.JWT_SECRET || "secret123", {
+      expiresIn: "7d"
+    });
 
     return res.json({
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email
-      }
+      user: { id: user._id, name: user.name, email: user.email }
     });
   } catch (error) {
     console.log("LOGIN ERROR:", error);
@@ -183,10 +225,10 @@ app.post("/login", async (req, res) => {
 
 app.get("/events", async (req, res) => {
   try {
-    const events = await Event.find();
-    return res.send(events);
+    const events = await Event.find().populate("participants", "name").lean();
+    return res.json(events);
   } catch (error) {
-    return res.status(500).send(error.message || "Failed to fetch events");
+    return res.status(500).json({ message: error.message || "Failed to fetch events" });
   }
 });
 
@@ -227,10 +269,8 @@ app.post("/join-event/:id", auth, async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    const userId = req.user.id;
-
-    if (!event.participants.includes(userId)) {
-      event.participants.push(userId);
+    if (!event.participants.map((entry) => String(entry)).includes(String(req.user.id))) {
+      event.participants.push(req.user.id);
     }
 
     await event.save();
@@ -248,9 +288,7 @@ app.post("/leave-event/:id", auth, async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    const userId = req.user.id;
-    event.participants = event.participants.filter((id) => id !== userId);
-
+    event.participants = event.participants.filter((entry) => String(entry) !== String(req.user.id));
     await event.save();
     return res.json(event);
   } catch (error) {
@@ -260,17 +298,158 @@ app.post("/leave-event/:id", auth, async (req, res) => {
 
 app.get("/my-events", auth, async (req, res) => {
   try {
-    const userId = req.user.id;
-    const events = await Event.find({ participants: userId });
-
+    const events = await Event.find({ participants: req.user.id });
     return res.json(events);
   } catch (error) {
     return res.status(500).json({ message: error.message || "Failed to fetch user events" });
   }
 });
 
+app.get("/my-created-events", auth, async (req, res) => {
+  try {
+    const events = await Event.find({ createdBy: req.user.id }).sort({ date: -1 });
+    return res.json(events);
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to fetch created events" });
+  }
+});
+
+app.put("/events/:id", auth, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (String(event.createdBy) !== String(req.user.id)) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    const { title, date, location, description, maxParticipants } = req.body;
+
+    if (title) {
+      event.title = title.trim();
+    }
+
+    if (date) {
+      event.date = date;
+    }
+
+    if (location !== undefined) {
+      event.location = location.trim();
+    }
+
+    if (description !== undefined) {
+      event.description = description.trim();
+    }
+
+    if (maxParticipants) {
+      event.maxParticipants = Number(maxParticipants) || 20;
+    }
+
+    await event.save();
+    return res.json(event);
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to update event" });
+  }
+});
+
+app.delete("/events/:id", auth, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (String(event.createdBy) !== String(req.user.id)) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    await event.deleteOne();
+    await ChatMessage.deleteMany({ eventId: req.params.id });
+    return res.json({ message: "Event deleted" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to delete event" });
+  }
+});
+
+app.get("/chat/:eventId", auth, async (req, res) => {
+  try {
+    const messages = await ChatMessage.find({ eventId: req.params.eventId })
+      .populate("sender", "name")
+      .sort({ createdAt: 1 })
+      .limit(100)
+      .lean();
+
+    return res.json(messages);
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to fetch messages" });
+  }
+});
+
+app.post("/chat/:eventId", auth, async (req, res) => {
+  try {
+    const text = req.body.text?.trim();
+
+    if (!text) {
+      return res.status(400).json({ message: "Message cannot be empty" });
+    }
+
+    if (text.length > 1000) {
+      return res.status(400).json({ message: "Message too long" });
+    }
+
+    const message = new ChatMessage({
+      eventId: req.params.eventId,
+      sender: req.user.id,
+      text
+    });
+
+    await message.save();
+
+    const populatedMessage = await ChatMessage.findById(message._id).populate("sender", "name").lean();
+    return res.status(201).json(populatedMessage);
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to send message" });
+  }
+});
+
+app.get("/leaderboard", async (req, res) => {
+  try {
+    const organised = await Event.aggregate([
+      { $group: { _id: "$createdBy", organised: { $sum: 1 } } },
+      { $lookup: { from: "users", localField: "_id", foreignField: "_id", as: "user" } },
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+      { $project: { userId: "$_id", name: { $ifNull: ["$user.name", "Runner"] }, organised: 1 } }
+    ]);
+
+    const joined = await Event.aggregate([
+      { $unwind: "$participants" },
+      { $group: { _id: "$participants", joined: { $sum: 1 } } }
+    ]);
+
+    const joinedMap = {};
+    joined.forEach((entry) => {
+      joinedMap[String(entry._id)] = entry.joined;
+    });
+
+    return res.json(
+      organised.map((entry) => ({
+        userId: String(entry.userId),
+        name: entry.name,
+        organised: entry.organised,
+        joined: joinedMap[String(entry.userId)] || 0
+      }))
+    );
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to fetch leaderboard" });
+  }
+});
+
 async function startServer() {
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 

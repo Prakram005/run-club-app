@@ -12,7 +12,7 @@ const auth = (req, res, next) => {
       ? authHeader.slice(7)
       : authHeader;
 
-    const decoded = jwt.verify(token, "secret123");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret123");
     req.user = {
       id: decoded.id
     };
