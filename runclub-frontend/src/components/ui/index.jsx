@@ -51,3 +51,5 @@ export { default as LiveRunTracker } from "./LiveRunTracker";
 export { default as LiveLeaderboard } from "./LiveLeaderboard";
 export { default as PageTransition } from "./PageTransition";
 export { default as LiveNotifications } from "./LiveNotifications";
+export { default as AIVideoPlayer } from "./AIVideoPlayer";
+export { EngagingButton, EngagingCard, AchievementPulse, GlowingText, FloatingParticles } from "./EngagingUI";
