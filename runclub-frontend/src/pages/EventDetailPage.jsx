@@ -28,6 +28,7 @@ export default function EventDetailPage() {
     title: "",
     date: "",
     location: "",
+    coordinates: null,
     description: "",
     maxParticipants: 20
   });
@@ -45,6 +46,7 @@ export default function EventDetailPage() {
             title: selected.title || "",
             date: selected.date ? selected.date.slice(0, 16) : "",
             location: selected.location || "",
+            coordinates: selected.coordinates || null,
             description: selected.description || "",
             maxParticipants: selected.maxParticipants || 20
           });

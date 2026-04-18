@@ -38,6 +38,17 @@ const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS ||
 
 let dbReady = false;
 
+function parseCoordinates(input) {
+  const latitude = Number.parseFloat(input?.latitude);
+  const longitude = Number.parseFloat(input?.longitude);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return undefined;
+  }
+
+  return { latitude, longitude };
+}
+
 function isAllowedOrigin(origin) {
   return ALLOWED_ORIGINS.includes(origin) || /^https:\/\/.*\.vercel\.app$/.test(origin);
 }
@@ -239,6 +250,7 @@ app.post("/create-event", auth, async (req, res) => {
     const description = req.body.description?.trim();
     const date = req.body.date;
     const maxParticipants = Number.parseInt(req.body.maxParticipants, 10) || 20;
+    const coordinates = parseCoordinates(req.body.coordinates);
 
     if (!title || !date) {
       return res.status(400).json({ message: "Title and date are required" });
@@ -247,6 +259,7 @@ app.post("/create-event", auth, async (req, res) => {
     const event = new Event({
       title,
       location,
+      coordinates,
       date,
       description,
       maxParticipants,
@@ -327,6 +340,7 @@ app.put("/events/:id", auth, async (req, res) => {
     }
 
     const { title, date, location, description, maxParticipants } = req.body;
+    const coordinates = parseCoordinates(req.body.coordinates);
 
     if (title) {
       event.title = title.trim();
@@ -338,6 +352,7 @@ app.put("/events/:id", auth, async (req, res) => {
 
     if (location !== undefined) {
       event.location = location.trim();
+      event.coordinates = coordinates;
     }
 
     if (description !== undefined) {

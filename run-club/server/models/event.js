@@ -3,6 +3,10 @@ const mongoose = require("mongoose");
 const eventSchema = new mongoose.Schema({
   title: String,
   location: String,
+  coordinates: {
+    latitude: Number,
+    longitude: Number
+  },
   date: String,
   description: String,
   maxParticipants: {

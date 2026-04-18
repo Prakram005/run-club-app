@@ -1,15 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { AlertCircle, Loader2, MapPin, Navigation, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import MapControls from "../components/map/MapControls";
-import { EventMarkerInfoCard } from "../components/map/LiveRunMarker";
 import { EngagingButton, GlowingText, FloatingParticles } from "../components/ui/EngagingUI";
+import { loadGoogleMapsScript } from "../utils/googleMaps";
 import * as api from "../utils/api";
 
 const mapsKey = import.meta.env.VITE_GOOGLE_MAPS_KEY;
-
+const defaultCenter = { lat: 28.6139, lng: 77.209 };
 const darkStyle = [
   { elementType: "geometry", stylers: [{ color: "#0f0f1e" }] },
   { elementType: "labels.text.stroke", stylers: [{ color: "#0f0f1e" }] },
@@ -19,20 +19,42 @@ const darkStyle = [
   { featureType: "poi", elementType: "geometry.fill", stylers: [{ color: "#16213e" }] }
 ];
 
-function loadMapsScript(key) {
-  return new Promise((resolve, reject) => {
-    if (window.google?.maps) {
-      resolve();
-      return;
-    }
+function getEventCoordinates(event) {
+  const latitude = Number(event?.coordinates?.latitude);
+  const longitude = Number(event?.coordinates?.longitude);
 
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${key}`;
-    script.async = true;
-    script.onload = resolve;
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  return { lat: latitude, lng: longitude };
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function distanceInKm(from, to) {
+  if (!from || !to) {
+    return null;
+  }
+
+  const earthRadiusKm = 6371;
+  const latDelta = ((to.lat - from.lat) * Math.PI) / 180;
+  const lngDelta = ((to.lng - from.lng) * Math.PI) / 180;
+  const startLat = (from.lat * Math.PI) / 180;
+  const endLat = (to.lat * Math.PI) / 180;
+
+  const a =
+    Math.sin(latDelta / 2) ** 2 +
+    Math.cos(startLat) * Math.cos(endLat) * Math.sin(lngDelta / 2) ** 2;
+
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 export default function MapPage() {
@@ -42,6 +64,7 @@ export default function MapPage() {
   const geocoderRef = useRef(null);
   const infoWindowRef = useRef(null);
   const markersRef = useRef([]);
+  const userLocationMarkerRef = useRef(null);
 
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,9 +73,9 @@ export default function MapPage() {
   const [mapsError, setMapsError] = useState("");
   const [selected, setSelected] = useState(null);
   const [liveTracking, setLiveTracking] = useState(true);
-  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [, setShowHeatmap] = useState(false);
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
-  const userLocationMarkerRef = useRef(null);
+  const [userPosition, setUserPosition] = useState(null);
 
   useEffect(() => {
     api.getEvents().then((response) => setEvents(response.data || []));
@@ -65,14 +88,14 @@ export default function MapPage() {
       return;
     }
 
-    loadMapsScript(mapsKey)
+    loadGoogleMapsScript(mapsKey)
       .then(() => {
         if (!mapRef.current) {
           return;
         }
 
         mapInstance.current = new window.google.maps.Map(mapRef.current, {
-          center: { lat: 28.6139, lng: 77.209 },
+          center: defaultCenter,
           zoom: 11,
           styles: darkStyle,
           disableDefaultUI: true,
@@ -89,8 +112,39 @@ export default function MapPage() {
       });
   }, []);
 
+  const renderMarker = useCallback((event, position) => {
+    const marker = new window.google.maps.Marker({
+      map: mapInstance.current,
+      position,
+      title: event.title,
+      icon: {
+        path: window.google.maps.SymbolPath.CIRCLE,
+        scale: 12,
+        fillColor: "#06b6d4",
+        fillOpacity: 0.9,
+        strokeColor: "#0891b2",
+        strokeWeight: 2
+      }
+    });
+
+    marker.addListener("click", () => {
+      setSelected(event);
+      infoWindowRef.current?.setContent(
+        `<div style="background:#0f0f1e;color:#f4f4f5;padding:12px 16px;border-radius:12px;min-width:220px;border:1px solid #06b6d4;">
+          <div style="font-weight:700;font-size:14px;margin-bottom:6px;color:#06b6d4;">${escapeHtml(event.title)}</div>
+          <div style="font-size:12px;color:#a1a1aa;margin-bottom:4px;">${escapeHtml(event.location || "Pinned meetup spot")}</div>
+          <div style="font-size:11px;color:#71717a;">${format(new Date(event.date), "MMM d h:mm a")}</div>
+          <div style="font-size:11px;color:#06b6d4;margin-top:4px;">${event.participants?.length || 0} runners</div>
+        </div>`
+      );
+      infoWindowRef.current?.open(mapInstance.current, marker);
+    });
+
+    markersRef.current.push(marker);
+  }, []);
+
   const placeMarkers = useCallback(() => {
-    if (!mapInstance.current || !geocoderRef.current) {
+    if (!mapInstance.current || !geocoderRef.current || !window.google?.maps) {
       return;
     }
 
@@ -98,44 +152,24 @@ export default function MapPage() {
     markersRef.current = [];
 
     events
-      .filter((event) => new Date(event.date) >= new Date() && event.location)
+      .filter((event) => new Date(event.date) >= new Date() && (event.location || getEventCoordinates(event)))
       .forEach((event) => {
+        const savedCoordinates = getEventCoordinates(event);
+
+        if (savedCoordinates) {
+          renderMarker(event, savedCoordinates);
+          return;
+        }
+
         geocoderRef.current.geocode({ address: event.location }, (results, status) => {
           if (status !== "OK" || !results?.[0]) {
             return;
           }
 
-          const marker = new window.google.maps.Marker({
-            map: mapInstance.current,
-            position: results[0].geometry.location,
-            title: event.title,
-            icon: {
-              path: window.google.maps.SymbolPath.CIRCLE,
-              scale: 12,
-              fillColor: "#06b6d4",
-              fillOpacity: 0.9,
-              strokeColor: "#0891b2",
-              strokeWeight: 2
-            }
-          });
-
-          marker.addListener("click", () => {
-            setSelected(event);
-            infoWindowRef.current?.setContent(
-              `<div style="background:#0f0f1e;color:#f4f4f5;padding:12px 16px;border-radius:12px;min-width:220px;border:1px solid #06b6d4;">
-                <div style="font-weight:700;font-size:14px;margin-bottom:6px;color:#06b6d4;">${event.title}</div>
-                <div style="font-size:12px;color:#a1a1aa;margin-bottom:4px;">${event.location}</div>
-                <div style="font-size:11px;color:#71717a;">${format(new Date(event.date), "MMM d h:mm a")}</div>
-                <div style="font-size:11px;color:#06b6d4;margin-top:4px;">👥 ${event.participants?.length || 0} runners</div>
-              </div>`
-            );
-            infoWindowRef.current?.open(mapInstance.current, marker);
-          });
-
-          markersRef.current.push(marker);
+          renderMarker(event, results[0].geometry.location);
         });
       });
-  }, [events]);
+  }, [events, renderMarker]);
 
   useEffect(() => {
     if (!loading && !mapsError) {
@@ -155,15 +189,14 @@ export default function MapPage() {
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
         const position = { lat: coords.latitude, lng: coords.longitude };
+        setUserPosition(position);
         mapInstance.current?.setCenter(position);
         mapInstance.current?.setZoom(13);
 
-        // Remove old marker
         if (userLocationMarkerRef.current) {
           userLocationMarkerRef.current.setMap(null);
         }
 
-        // Add new marker with custom styling
         userLocationMarkerRef.current = new window.google.maps.Marker({
           map: mapInstance.current,
           position,
@@ -171,9 +204,9 @@ export default function MapPage() {
           icon: {
             path: window.google.maps.SymbolPath.CIRCLE,
             scale: 10,
-            fillColor: "#06b6d4",
+            fillColor: "#22c55e",
             fillOpacity: 1,
-            strokeColor: "#0891b2",
+            strokeColor: "#ffffff",
             strokeWeight: 3
           }
         });
@@ -187,7 +220,30 @@ export default function MapPage() {
     );
   };
 
-  const upcomingWithLocation = events.filter((event) => new Date(event.date) >= new Date() && event.location);
+  const upcomingWithLocation = useMemo(() => {
+    const list = events.filter((event) => new Date(event.date) >= new Date() && (event.location || getEventCoordinates(event)));
+
+    return list
+      .map((event) => ({
+        ...event,
+        distanceKm: distanceInKm(userPosition, getEventCoordinates(event))
+      }))
+      .sort((left, right) => {
+        if (left.distanceKm == null && right.distanceKm == null) {
+          return new Date(left.date) - new Date(right.date);
+        }
+
+        if (left.distanceKm == null) {
+          return 1;
+        }
+
+        if (right.distanceKm == null) {
+          return -1;
+        }
+
+        return left.distanceKm - right.distanceKm;
+      });
+  }, [events, userPosition]);
 
   return (
     <div className="space-y-6 relative">
@@ -200,7 +256,7 @@ export default function MapPage() {
       >
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-            🗺️ Explore
+            Explore
           </p>
           <h1 className="mt-2 font-display text-4xl font-bold">
             <GlowingText color="cyan">Runs Near Me</GlowingText>
@@ -210,17 +266,16 @@ export default function MapPage() {
             transition={{ duration: 2, repeat: Infinity }}
             className="mt-2 text-sm text-cyan-400"
           >
-            🔴 {upcomingWithLocation.length} live events with locations
+            {upcomingWithLocation.length} live events with meetup locations
           </motion.p>
         </div>
         <div className="flex gap-3">
-          <MapControls onToggleLiveTracking={setLiveTracking} onToggleHeatmap={setShowHeatmap} onToggleAnimations={setAnimationsEnabled} />
-          <EngagingButton
-            onClick={locateMe}
-            disabled={geoLoading || loading || !!mapsError}
-            icon={Navigation}
-            variant="primary"
-          >
+          <MapControls
+            onToggleLiveTracking={setLiveTracking}
+            onToggleHeatmap={setShowHeatmap}
+            onToggleAnimations={setAnimationsEnabled}
+          />
+          <EngagingButton onClick={locateMe} disabled={geoLoading || loading || !!mapsError} icon={Navigation} variant="primary">
             {geoLoading ? "Locating..." : "Locate Me"}
           </EngagingButton>
         </div>
@@ -268,7 +323,7 @@ VITE_GOOGLE_MAPS_KEY=your_key_here`}
             </motion.div>
           ) : null}
           <div ref={mapRef} className="h-[500px] w-full bg-gradient-to-br from-slate-900 to-zinc-950" />
-          {liveTracking && !loading && (
+          {liveTracking && !loading ? (
             <motion.div
               animate={{ opacity: [0.6, 1, 0.6] }}
               transition={{ duration: 2, repeat: Infinity }}
@@ -277,7 +332,7 @@ VITE_GOOGLE_MAPS_KEY=your_key_here`}
               <div className="w-2 h-2 rounded-full bg-red-500" />
               <span className="text-xs font-bold text-cyan-400">LIVE MODE ACTIVE</span>
             </motion.div>
-          )}
+          ) : null}
         </motion.div>
       )}
 
@@ -285,28 +340,19 @@ VITE_GOOGLE_MAPS_KEY=your_key_here`}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
           className="card p-6 border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-purple-500/10"
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <motion.p
-                animate={{ opacity: [0.8, 1, 0.8] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent"
-              >
-                📍 Selected Event
-              </motion.p>
+              <p className="text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                Selected Event
+              </p>
               <h3 className="mt-2 font-display text-2xl font-bold text-white">{selected.title}</h3>
-              <motion.p
-                animate={{ scale: [1, 1.02, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="mt-3 text-sm text-cyan-300 font-semibold"
-              >
-                📍 {selected.location}
-              </motion.p>
-              <p className="mt-1 text-xs text-purple-300">⏰ {format(new Date(selected.date), "EEE, MMM d h:mm a")}</p>
-              <p className="mt-1.5 text-sm text-blue-300">👥 {selected.participants?.length || 0} / {selected.maxParticipants || 20} runners</p>
+              <p className="mt-3 text-sm text-cyan-300 font-semibold">{selected.location || "Pinned meetup spot"}</p>
+              <p className="mt-1 text-xs text-purple-300">{format(new Date(selected.date), "EEE, MMM d h:mm a")}</p>
+              <p className="mt-1.5 text-sm text-blue-300">
+                {selected.participants?.length || 0} / {selected.maxParticipants || 20} runners
+              </p>
             </div>
             <div className="flex gap-2">
               <EngagingButton onClick={() => navigate(`/events/${selected._id}`)} variant="primary">
@@ -328,13 +374,9 @@ VITE_GOOGLE_MAPS_KEY=your_key_here`}
         </motion.div>
       ) : null}
 
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <h2 className="mb-4 font-display text-2xl font-bold">
-          <GlowingText color="cyan">▶ Upcoming Events</GlowingText>
+          <GlowingText color="cyan">Upcoming Events</GlowingText>
         </h2>
         {upcomingWithLocation.length === 0 ? (
           <motion.div
@@ -342,15 +384,11 @@ VITE_GOOGLE_MAPS_KEY=your_key_here`}
             animate={{ opacity: 1 }}
             className="card p-8 text-center text-sm border-2 border-purple-500/30 bg-gradient-to-r from-purple-500/10 to-pink-500/10"
           >
-            <p className="text-purple-300">📍 No events with location data yet.</p>
+            <p className="text-purple-300">No events with location data yet.</p>
             <p className="mt-2 text-xs text-zinc-400">Add a location when creating events to see them here.</p>
           </motion.div>
         ) : (
-          <motion.div
-            className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
+          <motion.div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             {upcomingWithLocation.map((event, index) => (
               <motion.button
                 key={event._id}
@@ -366,17 +404,16 @@ VITE_GOOGLE_MAPS_KEY=your_key_here`}
                 }`}
               >
                 <p className="font-bold text-white group-hover:text-cyan-300 transition">{event.title}</p>
-                <p className="mt-2 text-sm text-blue-300">📍 {event.location}</p>
+                <p className="mt-2 text-sm text-blue-300">{event.location || "Pinned meetup spot"}</p>
                 <div className="mt-2 flex items-center justify-between text-xs">
-                  <p className="text-purple-300">⏰ {format(new Date(event.date), "MMM d")}</p>
-                  <motion.p
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    className="text-cyan-400 font-semibold"
-                  >
-                    👥 {event.participants?.length || 0}
-                  </motion.p>
+                  <p className="text-purple-300">{format(new Date(event.date), "MMM d")}</p>
+                  <p className="text-cyan-400 font-semibold">{event.participants?.length || 0} runners</p>
                 </div>
+                {event.distanceKm != null ? (
+                  <p className="mt-3 text-xs text-emerald-300">{event.distanceKm.toFixed(1)} km away</p>
+                ) : (
+                  <p className="mt-3 text-xs text-zinc-500">Pin your location to sort by distance.</p>
+                )}
               </motion.button>
             ))}
           </motion.div>
