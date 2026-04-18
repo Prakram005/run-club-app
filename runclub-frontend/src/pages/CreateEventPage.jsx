@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import * as api from "../utils/api";
-import { EngagingButton, GlowingText, FloatingParticles } from "../components/ui/EngagingUI";
+import { EngagingButton, GlowingText } from "../components/ui/EngagingUI";
 
 const today = new Date().toISOString().slice(0, 16);
 
@@ -53,9 +53,8 @@ export default function CreateEventPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-purple-950 to-pink-950 px-4 py-10 text-zinc-100 relative overflow-hidden">
-      <FloatingParticles />
-      
       <div className="absolute inset-0 pointer-events-none">
+
         <motion.div
           animate={{ scale: [1, 1.5, 1], opacity: [0.1, 0.2, 0.1] }}
           transition={{ duration: 5, repeat: Infinity }}

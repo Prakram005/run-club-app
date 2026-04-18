@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { Activity, MessageCircle, MapPin } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { EngagingButton, GlowingText, FloatingParticles } from "../components/ui/EngagingUI";
+import { EngagingButton, GlowingText } from "../components/ui/EngagingUI";
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -38,8 +38,6 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-blue-950 to-purple-950 px-4 py-10 text-zinc-100 relative overflow-hidden">
-      <FloatingParticles />
-      
       <div className="absolute inset-0 pointer-events-none">
         <motion.div
           animate={{ scale: [1, 1.5, 1], opacity: [0.1, 0.2, 0.1] }}
