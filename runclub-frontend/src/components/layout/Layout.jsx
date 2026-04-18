@@ -1,6 +1,7 @@
 import { Home, CalendarDays, Map, PlusSquare, Trophy, LogOut } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { LiveNotifications } from "../ui";
 
 const links = [
   { to: "/", label: "Dashboard", icon: Home, end: true },
@@ -15,6 +16,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      <LiveNotifications />
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-4 md:flex-row md:px-6">
         <aside className="card md:sticky md:top-4 md:h-[calc(100vh-2rem)] md:w-72">
           <div className="flex h-full flex-col p-5">

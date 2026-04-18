@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, Plus, Trophy, Users } from "lucide-react";
+import { motion } from "framer-motion";
 import EventCard from "../components/events/EventCard";
-import { EventCardSkeleton } from "../components/ui";
+import { EventCardSkeleton, LiveLeaderboard } from "../components/ui";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../utils/api";
 
@@ -19,11 +20,28 @@ function getParticipantId(entry) {
 
 function StatCard({ label, value, icon: Icon }) {
   return (
-    <div className="card p-5">
-      <Icon size={18} className="text-brand-400" />
-      <p className="mt-4 text-3xl font-bold">{value}</p>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -5 }}
+      className="card p-5 cursor-pointer transition"
+    >
+      <motion.div
+        animate={{ rotate: [0, 5, -5, 0] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      >
+        <Icon size={18} className="text-brand-400" />
+      </motion.div>
+      <motion.p
+        key={value}
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="mt-4 text-3xl font-bold"
+      >
+        {value}
+      </motion.p>
       <p className="mt-1 text-xs uppercase tracking-widest text-zinc-500">{label}</p>
-    </div>
+    </motion.div>
   );
 }
 
@@ -110,16 +128,27 @@ export default function DashboardPage() {
             ))}
           </div>
         ) : featuredEvents.length === 0 ? (
-          <div className="card p-10 text-center">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="card p-10 text-center"
+          >
             <p className="font-display text-2xl font-semibold">No upcoming runs yet</p>
             <p className="mt-2 text-sm text-zinc-400">Create an event or join one to get started.</p>
-          </div>
+          </motion.div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ staggerChildren: 0.1 }}
+            className="grid gap-4 md:grid-cols-2"
+          >
             {featuredEvents.map((event) => (
-              <EventCard key={event._id} event={event} onRefresh={load} />
+              <motion.div key={event._id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <EventCard event={event} onRefresh={load} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </section>
 

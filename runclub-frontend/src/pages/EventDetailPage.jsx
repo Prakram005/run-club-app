@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { ArrowLeft, Calendar, Edit2, MapPin, Trash2, Users } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import ChatRoom from "../components/chat/ChatRoom";
-import { Badge, Spinner } from "../components/ui";
+import { Badge, Spinner, EventCountdown, AnimatedEventStatus, LiveParticipantCounter, ActivityFeed, LiveRunTracker } from "../components/ui";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../utils/api";
 
@@ -205,7 +206,7 @@ export default function EventDetailPage() {
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <div className="mb-3 flex flex-wrap gap-2">
-                  {isPast ? <Badge>Past</Badge> : null}
+                  <AnimatedEventStatus event={event} isPast={isPast} />
                   {isCreator ? <Badge variant="brand">Organiser</Badge> : null}
                   {isJoined && !isCreator ? <Badge variant="green">Joined</Badge> : null}
                 </div>
@@ -237,15 +238,22 @@ export default function EventDetailPage() {
                   <span>{event.location}</span>
                 </div>
               ) : null}
-              <div className="flex items-center gap-2">
-                <Users size={15} className="text-blue-400" />
-                <span>
-                  {count} / {event.maxParticipants || 20} participants
-                </span>
-              </div>
             </div>
 
             {event.description ? <p className="mt-5 text-sm leading-6 text-zinc-400">{event.description}</p> : null}
+
+            {!isPast && (
+              <div className="mt-6 grid gap-4 md:grid-cols-2">
+                <EventCountdown eventDate={event.date} />
+                <div className="rounded-lg bg-zinc-900/50 p-4">
+                  <LiveParticipantCounter
+                    currentCount={count}
+                    maxCount={event.maxParticipants || 20}
+                    isLive={true}
+                  />
+                </div>
+              </div>
+            )}
 
             {!isPast ? (
               <div className="mt-6 flex flex-wrap gap-3">
@@ -281,10 +289,20 @@ export default function EventDetailPage() {
           >
             Participants ({count})
           </button>
+          <button
+            onClick={() => setActiveTab("activity")}
+            className={`rounded-xl px-4 py-2 text-sm ${
+              activeTab === "activity" ? "bg-brand-400 text-zinc-950" : "text-zinc-400"
+            }`}
+          >
+            Activity
+          </button>
         </div>
 
         {activeTab === "chat" ? (
           <ChatRoom eventId={id} />
+        ) : activeTab === "activity" ? (
+          <ActivityFeed eventId={id} />
         ) : (
           <div className="card p-5">
             {count === 0 ? (
@@ -295,14 +313,20 @@ export default function EventDetailPage() {
                   const participantId = getParticipantId(participant);
                   const name = typeof participant === "object" ? participant.name : `Participant ${index + 1}`;
                   return (
-                    <div key={participantId || index} className="flex items-center gap-3">
+                    <motion.div
+                      key={participantId || index}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="flex items-center gap-3"
+                    >
                       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-400/15 text-sm font-bold text-brand-300">
                         {String(name || "R").charAt(0).toUpperCase()}
                       </div>
                       <p className="text-sm text-zinc-200">
                         {name} {String(participantId) === myId ? "(you)" : ""}
                       </p>
-                    </div>
+                    </motion.div>
                   );
                 })}
               </div>
