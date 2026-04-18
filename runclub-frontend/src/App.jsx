@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import Layout from "./components/layout/Layout";
 import { useAuth } from "./context/AuthContext";
 import AuthPage from "./pages/AuthPage";
@@ -43,26 +44,29 @@ function PublicOnly({ children }) {
 
 export default function App() {
   return (
-    <Routes>
-      <Route
-        path="/auth"
-        element={
-          <PublicOnly>
-            <AuthPage />
-          </PublicOnly>
-        }
-      />
+    <>
+      <Routes>
+        <Route
+          path="/auth"
+          element={
+            <PublicOnly>
+              <AuthPage />
+            </PublicOnly>
+          }
+        />
 
-      <Route path="/" element={<ProtectedLayout />}>
-        <Route index element={<DashboardPage />} />
-        <Route path="events" element={<EventsPage />} />
-        <Route path="events/:id" element={<EventDetailPage />} />
-        <Route path="create" element={<CreateEventPage />} />
-        <Route path="map" element={<MapPage />} />
-        <Route path="leaderboard" element={<LeaderboardPage />} />
-      </Route>
+        <Route path="/" element={<ProtectedLayout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="events" element={<EventsPage />} />
+          <Route path="events/:id" element={<EventDetailPage />} />
+          <Route path="create" element={<CreateEventPage />} />
+          <Route path="map" element={<MapPage />} />
+          <Route path="leaderboard" element={<LeaderboardPage />} />
+        </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <Analytics />
+    </>
   );
 }
