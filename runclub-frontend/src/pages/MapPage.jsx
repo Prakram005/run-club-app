@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { AlertCircle, Loader2, MapPin, Navigation, X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import MapControls from "../components/map/MapControls";
 import { EngagingButton, GlowingText, FloatingParticles } from "../components/ui/EngagingUI";
@@ -59,12 +59,14 @@ function distanceInKm(from, to) {
 
 export default function MapPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const geocoderRef = useRef(null);
   const infoWindowRef = useRef(null);
   const markersRef = useRef([]);
   const userLocationMarkerRef = useRef(null);
+  const focusedEventRef = useRef(null);
 
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -76,6 +78,7 @@ export default function MapPage() {
   const [, setShowHeatmap] = useState(false);
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
   const [userPosition, setUserPosition] = useState(null);
+  const eventId = searchParams.get("eventId");
 
   useEffect(() => {
     api.getEvents().then((response) => setEvents(response.data || []));
@@ -140,6 +143,22 @@ export default function MapPage() {
       infoWindowRef.current?.open(mapInstance.current, marker);
     });
 
+    if (focusedEventRef.current && focusedEventRef.current === event._id) {
+      mapInstance.current?.setCenter(position);
+      mapInstance.current?.setZoom(15);
+      setSelected(event);
+      infoWindowRef.current?.setContent(
+        `<div style="background:#0f0f1e;color:#f4f4f5;padding:12px 16px;border-radius:12px;min-width:220px;border:1px solid #06b6d4;">
+          <div style="font-weight:700;font-size:14px;margin-bottom:6px;color:#06b6d4;">${escapeHtml(event.title)}</div>
+          <div style="font-size:12px;color:#a1a1aa;margin-bottom:4px;">${escapeHtml(event.location || "Pinned meetup spot")}</div>
+          <div style="font-size:11px;color:#71717a;">${format(new Date(event.date), "MMM d h:mm a")}</div>
+          <div style="font-size:11px;color:#06b6d4;margin-top:4px;">${event.participants?.length || 0} runners</div>
+        </div>`
+      );
+      infoWindowRef.current?.open(mapInstance.current, marker);
+      focusedEventRef.current = null;
+    }
+
     markersRef.current.push(marker);
   }, []);
 
@@ -176,6 +195,10 @@ export default function MapPage() {
       placeMarkers();
     }
   }, [loading, mapsError, placeMarkers]);
+
+  useEffect(() => {
+    focusedEventRef.current = eventId;
+  }, [eventId]);
 
   const locateMe = () => {
     if (!navigator.geolocation) {

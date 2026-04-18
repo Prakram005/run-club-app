@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Calendar, Crosshair, FileText, MapPin, Users, X } from "lucide-react";
+import { ArrowLeft, Calendar, Crosshair, FileText, MapPin, Search, Users, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
@@ -30,6 +30,7 @@ export default function CreateEventPage() {
   const [mapLoading, setMapLoading] = useState(true);
   const [mapError, setMapError] = useState("");
   const [locationLoading, setLocationLoading] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [form, setForm] = useState({
     title: "",
     date: today,
@@ -190,6 +191,43 @@ export default function CreateEventPage() {
     );
   };
 
+  const searchLocation = () => {
+    const address = form.location.trim();
+
+    if (!address) {
+      toast.error("Enter a location to search.");
+      return;
+    }
+
+    if (!geocoderRef.current) {
+      toast.error("Map is still loading.");
+      return;
+    }
+
+    setSearchLoading(true);
+
+    geocoderRef.current.geocode({ address }, (results, status) => {
+      if (status !== "OK" || !results?.[0]) {
+        toast.error("Could not find that location.");
+        setSearchLoading(false);
+        return;
+      }
+
+      const found = results[0];
+      const position = {
+        lat: found.geometry.location.lat(),
+        lng: found.geometry.location.lng()
+      };
+
+      setForm((current) => ({
+        ...current,
+        location: found.formatted_address
+      }));
+      setPinnedLocation(position, { toastMessage: "Location pinned from search." });
+      setSearchLoading(false);
+    });
+  };
+
   const clearPin = () => {
     if (markerRef.current) {
       markerRef.current.setMap(null);
@@ -335,19 +373,30 @@ export default function CreateEventPage() {
                 <MapPin size={16} />
                 Location
               </label>
-              <input
-                type="text"
-                className="input w-full px-4 py-3 rounded-xl border-2 border-blue-500/30 bg-blue-500/5 text-white placeholder-blue-600 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                placeholder="Central Park Gate 5"
-                value={form.location}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    location: event.target.value,
-                    coordinates: null
-                  }))
-                }
-              />
+              <div className="flex flex-col gap-3 md:flex-row">
+                <input
+                  type="text"
+                  className="input w-full px-4 py-3 rounded-xl border-2 border-blue-500/30 bg-blue-500/5 text-white placeholder-blue-600 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                  placeholder="Central Park Gate 5"
+                  value={form.location}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      location: event.target.value,
+                      coordinates: null
+                    }))
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={searchLocation}
+                  disabled={searchLoading || mapLoading || !!mapError}
+                  className="btn-ghost gap-2 md:min-w-[170px]"
+                >
+                  <Search size={15} />
+                  {searchLoading ? "Searching..." : "Find on Map"}
+                </button>
+              </div>
               <p className="mt-2 text-xs text-zinc-400">
                 Type an address, or use the map below to drop an exact pin. Editing this field manually clears the saved pin.
               </p>

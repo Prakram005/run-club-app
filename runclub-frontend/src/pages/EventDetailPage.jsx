@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { ArrowLeft, Calendar, Edit2, MapPin, Trash2, Users } from "lucide-react";
+import { ArrowLeft, Calendar, Edit2, MapPin, Navigation, Trash2, Users } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
@@ -259,6 +259,10 @@ export default function EventDetailPage() {
 
             {!isPast ? (
               <div className="mt-6 flex flex-wrap gap-3">
+                <button onClick={() => navigate(`/map?eventId=${event._id}`)} className="btn-ghost gap-2">
+                  <Navigation size={15} />
+                  Open in Map
+                </button>
                 {!isCreator && !isJoined ? (
                   <button onClick={() => handleJoinLeave("join")} className="btn-primary">
                     Join Event
