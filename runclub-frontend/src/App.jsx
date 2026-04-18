@@ -1,5 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { AnimatePresence } from "framer-motion";
 import Layout from "./components/layout/Layout";
+import SplashScreen from "./components/ui/SplashScreen";
 import { useAuth } from "./context/AuthContext";
 import AuthPage from "./pages/AuthPage";
 import CreateEventPage from "./pages/CreateEventPage";
@@ -42,27 +45,35 @@ function PublicOnly({ children }) {
 }
 
 export default function App() {
-  return (
-    <Routes>
-      <Route
-        path="/auth"
-        element={
-          <PublicOnly>
-            <AuthPage />
-          </PublicOnly>
-        }
-      />
+  const [showSplash, setShowSplash] = useState(true);
 
-      <Route path="/" element={<ProtectedLayout />}>
+  return (
+    <AnimatePresence mode="wait">
+      {showSplash ? (
+        <SplashScreen key="splash" onComplete={() => setShowSplash(false)} />
+      ) : (
+        <Routes key="app">
+          <Route
+            path="/auth"
+            element={
+              <PublicOnly>
+                <AuthPage />
+              </PublicOnly>
+            }
+          />
+
+          <Route path="/" element={<ProtectedLayout />}>
         <Route index element={<DashboardPage />} />
         <Route path="events" element={<EventsPage />} />
         <Route path="events/:id" element={<EventDetailPage />} />
         <Route path="create" element={<CreateEventPage />} />
         <Route path="map" element={<MapPage />} />
         <Route path="leaderboard" element={<LeaderboardPage />} />
-      </Route>
+          </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      )}
+    </AnimatePresence>
   );
 }
