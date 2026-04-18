@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
-import { ArrowLeft, Calendar, Edit2, MapPin, Navigation, Trash2, Users } from "lucide-react";
+import { ArrowLeft, Calendar, Edit2, Loader2, MapPin, Navigation, Trash2, Users } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
@@ -8,9 +8,32 @@ import ChatRoom from "../components/chat/ChatRoom";
 import { Badge, Spinner, EventCountdown, AnimatedEventStatus, LiveParticipantCounter, ActivityFeed, LiveRunTracker } from "../components/ui";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../utils/api";
+import { loadGoogleMapsScript } from "../utils/googleMaps";
+
+const mapsKey = import.meta.env.VITE_GOOGLE_MAPS_KEY;
+const defaultCenter = { lat: 28.6139, lng: 77.209 };
+const mapStyle = [
+  { elementType: "geometry", stylers: [{ color: "#0f0f1e" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#0f0f1e" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#06b6d4" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#1a1a2e" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0a0a14" }] },
+  { featureType: "poi", elementType: "geometry.fill", stylers: [{ color: "#16213e" }] }
+];
 
 function getParticipantId(entry) {
   return typeof entry === "object" ? entry?._id : entry;
+}
+
+function getEventCoordinates(event) {
+  const latitude = Number(event?.coordinates?.latitude);
+  const longitude = Number(event?.coordinates?.longitude);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  return { lat: latitude, lng: longitude };
 }
 
 export default function EventDetailPage() {
@@ -18,12 +41,18 @@ export default function EventDetailPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const markerRef = useRef(null);
+  const geocoderRef = useRef(null);
 
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(searchParams.get("edit") === "1");
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("chat");
+  const [mapLoading, setMapLoading] = useState(true);
+  const [mapError, setMapError] = useState("");
   const [form, setForm] = useState({
     title: "",
     date: "",
@@ -58,6 +87,109 @@ export default function EventDetailPage() {
   useEffect(() => {
     load();
   }, [id]);
+
+  useEffect(() => {
+    if (!event) {
+      return;
+    }
+
+    if (!mapsKey || mapsKey === "YOUR_GOOGLE_MAPS_API_KEY") {
+      setMapError("Add VITE_GOOGLE_MAPS_KEY to show the event pin on the detail page.");
+      setMapLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const renderEventPin = (position) => {
+      if (!mapInstanceRef.current || !window.google?.maps) {
+        return;
+      }
+
+      mapInstanceRef.current.setCenter(position);
+      mapInstanceRef.current.setZoom(15);
+
+      if (!markerRef.current) {
+        markerRef.current = new window.google.maps.Marker({
+          map: mapInstanceRef.current,
+          icon: {
+            path: window.google.maps.SymbolPath.CIRCLE,
+            scale: 11,
+            fillColor: "#f43f5e",
+            fillOpacity: 0.95,
+            strokeColor: "#ffffff",
+            strokeWeight: 2
+          }
+        });
+      }
+
+      markerRef.current.setPosition(position);
+      markerRef.current.setMap(mapInstanceRef.current);
+    };
+
+    setMapError("");
+    setMapLoading(true);
+
+    loadGoogleMapsScript(mapsKey)
+      .then(() => {
+        if (cancelled || !mapRef.current) {
+          return;
+        }
+
+        if (!mapInstanceRef.current) {
+          mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
+            center: defaultCenter,
+            zoom: 11,
+            styles: mapStyle,
+            disableDefaultUI: true,
+            zoomControl: true
+          });
+        }
+
+        if (!geocoderRef.current) {
+          geocoderRef.current = new window.google.maps.Geocoder();
+        }
+
+        const coordinates = getEventCoordinates(event);
+
+        if (coordinates) {
+          renderEventPin(coordinates);
+          setMapLoading(false);
+          return;
+        }
+
+        if (!event.location) {
+          setMapError("No location pin is available for this event yet.");
+          setMapLoading(false);
+          return;
+        }
+
+        geocoderRef.current.geocode({ address: event.location }, (results, status) => {
+          if (cancelled) {
+            return;
+          }
+
+          if (status !== "OK" || !results?.[0]) {
+            setMapError("Could not load the event location on the map.");
+            setMapLoading(false);
+            return;
+          }
+
+          renderEventPin(results[0].geometry.location);
+          setMapLoading(false);
+        });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setMapError("Failed to load Google Maps for this event.");
+          setMapLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [event]);
 
   if (loading) {
     return (
@@ -275,6 +407,27 @@ export default function EventDetailPage() {
                 ) : null}
               </div>
             ) : null}
+
+            <div className="mt-8">
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.25em] text-cyan-400">
+                <MapPin size={15} />
+                Live Pin Location
+              </div>
+              {mapError ? (
+                <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                  {mapError}
+                </div>
+              ) : null}
+              <div className="relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-zinc-950/40">
+                {mapLoading ? (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center gap-2 bg-zinc-950/80 text-sm text-cyan-300">
+                    <Loader2 size={18} className="animate-spin" />
+                    Loading event map...
+                  </div>
+                ) : null}
+                <div ref={mapRef} className="h-[260px] w-full bg-gradient-to-br from-slate-900 to-zinc-950" />
+              </div>
+            </div>
           </div>
         )}
       </section>
