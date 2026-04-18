@@ -268,10 +268,10 @@ export default function AuthPage() {
               whileTap={{ scale: 0.95 }}
             >
               {mode === "login" ? "Sign up here" : "Login here"}
-            </button>
-          </p>
-        </section>
-      </div>
+            </motion.button>
+          </motion.p>
+        </motion.section>
+      </motion.div>
     </div>
   );
 }
