@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import MapControls from "../components/map/MapControls";
 import { EventMarkerInfoCard } from "../components/map/LiveRunMarker";
 import { EngagingButton, GlowingText, FloatingParticles } from "../components/ui/EngagingUI";
-import { AIVideoPlayer } from "../components/ui";
 import * as api from "../utils/api";
 
 const mapsKey = import.meta.env.VITE_GOOGLE_MAPS_KEY;
@@ -383,9 +382,6 @@ VITE_GOOGLE_MAPS_KEY=your_key_here`}
           </motion.div>
         )}
       </motion.section>
-
-      {/* AI Video Player */}
-      <AIVideoPlayer />
     </div>
   );
 }
