@@ -14,10 +14,7 @@ body,
 
 body {
   margin: 0;
-  background:
-    radial-gradient(circle at top left, rgba(223, 224, 32, 0.08), transparent 26%),
-    radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.08), transparent 24%),
-    #09090b;
+  background: linear-gradient(135deg, #09090b 0%, #1a1a2e 50%, #16213e 100%);
   color: #f4f4f5;
   font-family: "Segoe UI", system-ui, sans-serif;
 }
@@ -26,13 +23,36 @@ body {
   box-sizing: border-box;
 }
 
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(106, 214, 255, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(106, 214, 255, 0.8);
+}
+
 @layer components {
   .card {
-    @apply rounded-2xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-sm;
+    @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md;
   }
 
   .input {
-    @apply w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-500 focus:border-brand-400;
+    @apply w-full rounded-xl border border-white/20 bg-white/5 backdrop-blur-md px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30;
   }
 
   .label {
@@ -40,14 +60,76 @@ body {
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-xl bg-brand-400 px-4 py-2.5 text-sm font-semibold text-zinc-950 transition hover:bg-brand-300 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply relative inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-3 text-sm font-bold text-white transition hover:shadow-lg hover:shadow-cyan-500/50 disabled:opacity-50;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-800;
+    @apply inline-flex items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900/50 px-6 py-3 text-sm font-bold text-zinc-200 transition hover:border-cyan-500 hover:text-cyan-300;
   }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-300 transition hover:bg-red-500/20;
+    @apply inline-flex items-center justify-center rounded-xl border border-red-500/30 bg-red-500/10 px-6 py-3 text-sm font-bold text-red-300 transition hover:bg-red-500/20;
   }
+}
+
+/* Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(106, 214, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 20px rgba(106, 214, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(106, 214, 255, 0);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes count-up {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background-size: 1000px 100%;
+  animation: shimmer 3s infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out;
+}
+
+.animate-count-up {
+  animation: count-up 0.6s ease-out;
 }
