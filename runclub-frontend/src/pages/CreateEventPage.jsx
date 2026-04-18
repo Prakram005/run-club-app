@@ -53,20 +53,6 @@ export default function CreateEventPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-purple-950 to-pink-950 px-4 py-10 text-zinc-100 relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none">
-
-        <motion.div
-          animate={{ scale: [1, 1.5, 1], opacity: [0.1, 0.2, 0.1] }}
-          transition={{ duration: 5, repeat: Infinity }}
-          className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{ scale: [1, 1.5, 1], opacity: [0.1, 0.2, 0.1] }}
-          transition={{ duration: 6, repeat: Infinity, delay: 1 }}
-          className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl"
-        />
-      </div>
-
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
