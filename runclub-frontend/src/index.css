@@ -28,7 +28,7 @@ body {
 
 @layer components {
   .card {
-    @apply rounded-2xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-sm shadow-panel;
+    @apply rounded-2xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-sm;
   }
 
   .input {
