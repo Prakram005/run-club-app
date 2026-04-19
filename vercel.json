@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "projects": [
+    {
+      "name": "run-club-frontend",
+      "path": "runclub-frontend",
+      "settings": {
+        "buildCommand": "npm run build",
+        "framework": "vite"
+      }
+    },
+    {
+      "name": "run-club-api",
+      "path": "run-club/server",
+      "settings": {
+        "buildCommand": "npm install",
+        "framework": "node"
+      }
+    }
+  ]
+}
