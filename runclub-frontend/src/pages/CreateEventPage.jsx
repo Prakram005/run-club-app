@@ -310,7 +310,7 @@ export default function CreateEventPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-purple-950 to-pink-950 px-4 py-10 text-zinc-100 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-black via-zinc-950 to-red-950 px-4 py-10 text-zinc-100 relative overflow-hidden">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -319,7 +319,7 @@ export default function CreateEventPage() {
       >
         <motion.button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-sm font-bold text-cyan-400 hover:text-cyan-300 transition"
+          className="flex items-center gap-2 text-sm font-bold text-red-400 hover:text-red-300 transition"
           whileHover={{ gap: "12px" }}
           whileTap={{ scale: 0.95 }}
         >
@@ -332,24 +332,24 @@ export default function CreateEventPage() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <p className="text-xs font-bold uppercase tracking-[0.35em] bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+          <p className="text-xs font-bold uppercase tracking-[0.35em] bg-gradient-to-r from-red-500 to-red-400 bg-clip-text text-transparent">
             Create Event
           </p>
           <motion.h1
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className="mt-4 font-display text-5xl font-bold leading-tight"
+            className="mt-4 font-display text-5xl font-bold leading-tight text-gradient-red drop-shadow-glow-red"
           >
-            <GlowingText color="purple">Organize your</GlowingText>
+            <GlowingText color="red">Organize your</GlowingText>
             <br />
-            <GlowingText color="pink">perfect run</GlowingText>
+            <GlowingText color="red">perfect run</GlowingText>
           </motion.h1>
           <motion.p
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="mt-4 text-lg text-purple-300 font-semibold"
+            className="mt-4 text-lg text-red-300 font-semibold"
           >
             Set the route, time, and drop an exact pin so runners can find it on the map.
           </motion.p>
@@ -359,41 +359,39 @@ export default function CreateEventPage() {
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="card p-8 border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-pink-500/10"
+          className="card-elevated glass-effect p-8 border-2 border-red-600/30 bg-gradient-to-br from-red-900/10 to-black/30 shadow-red-glow-lg backdrop-blur-xl"
         >
           <motion.form onSubmit={handleSubmit} className="space-y-7">
             <div>
-              <label className="block text-sm font-bold uppercase tracking-wider text-cyan-400 mb-3">
+              <label className="block text-sm font-bold uppercase tracking-wider text-red-400 mb-3">
                 Event Title
               </label>
               <input
                 type="text"
-                className="input w-full px-4 py-3 rounded-xl border-2 border-cyan-500/30 bg-cyan-500/5 text-white placeholder-cyan-600 transition focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                className="input w-full px-4 py-3 rounded-xl border-2 border-red-600/40 bg-black/60 text-white placeholder:text-red-400 transition focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/30 shadow-red-glow-sm"
                 placeholder="Sunday Morning 5K"
                 value={form.title}
                 onChange={(event) => update("title", event.target.value)}
                 required
               />
             </div>
-
             <div className="grid gap-6 md:grid-cols-2">
               <div>
-                <label className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-purple-400 mb-3">
+                <label className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-red-400 mb-3">
                   <Calendar size={16} />
                   Date and Time
                 </label>
                 <input
                   type="datetime-local"
-                  className="input w-full px-4 py-3 rounded-xl border-2 border-purple-500/30 bg-purple-500/5 text-white placeholder-purple-600 transition focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+                  className="input w-full px-4 py-3 rounded-xl border-2 border-red-600/40 bg-black/60 text-white placeholder:text-red-400 transition focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/30 shadow-red-glow-sm"
                   min={today}
                   value={form.date}
                   onChange={(event) => update("date", event.target.value)}
                   required
                 />
               </div>
-
               <div>
-                <label className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-pink-400 mb-3">
+                <label className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-red-400 mb-3">
                   <Users size={16} />
                   Max Participants
                 </label>
@@ -401,20 +399,19 @@ export default function CreateEventPage() {
                   type="number"
                   min="1"
                   max="500"
-                  className="input w-full px-4 py-3 rounded-xl border-2 border-pink-500/30 bg-pink-500/5 text-white placeholder-pink-600 transition focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/30"
+                  className="input w-full px-4 py-3 rounded-xl border-2 border-red-600/40 bg-black/60 text-white placeholder:text-red-400 transition focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/30 shadow-red-glow-sm"
                   value={form.maxParticipants}
                   onChange={(event) => update("maxParticipants", event.target.value)}
                 />
               </div>
             </div>
-
             <div className="grid gap-6 md:grid-cols-2">
               <div>
-                <label className="text-sm font-bold uppercase tracking-wider text-indigo-400 mb-3 block">
+                <label className="text-sm font-bold uppercase tracking-wider text-red-400 mb-3 block">
                   ⛰️ Difficulty Level
                 </label>
                 <select
-                  className="input w-full px-4 py-3 rounded-xl border-2 border-indigo-500/30 bg-indigo-500/5 text-white transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                  className="input w-full px-4 py-3 rounded-xl border-2 border-red-600/40 bg-black/60 text-white transition focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/30 shadow-red-glow-sm"
                   value={form.difficulty}
                   onChange={(event) => update("difficulty", event.target.value)}
                 >
@@ -423,13 +420,12 @@ export default function CreateEventPage() {
                   <option value="advanced">🔴 Advanced</option>
                 </select>
               </div>
-
               <div>
-                <label className="text-sm font-bold uppercase tracking-wider text-green-400 mb-3 block">
+                <label className="text-sm font-bold uppercase tracking-wider text-red-400 mb-3 block">
                   🏞️ Terrain
                 </label>
                 <select
-                  className="input w-full px-4 py-3 rounded-xl border-2 border-green-500/30 bg-green-500/5 text-white transition focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/30"
+                  className="input w-full px-4 py-3 rounded-xl border-2 border-red-600/40 bg-black/60 text-white transition focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/30 shadow-red-glow-sm"
                   value={form.terrain}
                   onChange={(event) => update("terrain", event.target.value)}
                 >
@@ -439,46 +435,43 @@ export default function CreateEventPage() {
                 </select>
               </div>
             </div>
-
             <div className="grid gap-6 md:grid-cols-2">
               <div>
-                <label className="text-sm font-bold uppercase tracking-wider text-lime-400 mb-3 block">
+                <label className="text-sm font-bold uppercase tracking-wider text-red-400 mb-3 block">
                   ⏱️ Expected Pace (e.g., 8:00/km)
                 </label>
                 <input
                   type="text"
-                  className="input w-full px-4 py-3 rounded-xl border-2 border-lime-500/30 bg-lime-500/5 text-white placeholder-lime-600 transition focus:border-lime-500 focus:outline-none focus:ring-2 focus:ring-lime-500/30"
+                  className="input w-full px-4 py-3 rounded-xl border-2 border-red-600/40 bg-black/60 text-white placeholder:text-red-400 transition focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/30 shadow-red-glow-sm"
                   placeholder="e.g., 8:00/km or 5 min/mile"
                   value={form.pace}
                   onChange={(event) => update("pace", event.target.value)}
                 />
               </div>
-
               <div>
-                <label className="text-sm font-bold uppercase tracking-wider text-yellow-400 mb-3 block">
+                <label className="text-sm font-bold uppercase tracking-wider text-red-400 mb-3 block">
                   📏 Distance (km)
                 </label>
                 <input
                   type="number"
                   step="0.1"
                   min="0"
-                  className="input w-full px-4 py-3 rounded-xl border-2 border-yellow-500/30 bg-yellow-500/5 text-white placeholder-yellow-600 transition focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/30"
+                  className="input w-full px-4 py-3 rounded-xl border-2 border-red-600/40 bg-black/60 text-white placeholder:text-red-400 transition focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/30 shadow-red-glow-sm"
                   placeholder="e.g., 5"
                   value={form.distance}
                   onChange={(event) => update("distance", event.target.value)}
                 />
               </div>
             </div>
-
             <div>
-              <label className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-blue-400 mb-3">
+              <label className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-red-400 mb-3">
                 <MapPin size={16} />
                 Location
               </label>
               <div className="flex flex-col gap-3 md:flex-row">
                 <input
                   type="text"
-                  className="input w-full px-4 py-3 rounded-xl border-2 border-blue-500/30 bg-blue-500/5 text-white placeholder-blue-600 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                  className="input w-full px-4 py-3 rounded-xl border-2 border-red-600/40 bg-black/60 text-white placeholder:text-red-400 transition focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/30 shadow-red-glow-sm"
                   placeholder="Central Park Gate 5"
                   value={form.location}
                   onChange={(event) =>
@@ -493,7 +486,7 @@ export default function CreateEventPage() {
                   type="button"
                   onClick={searchLocation}
                   disabled={searchLoading || mapLoading || !!mapError}
-                  className="btn-ghost gap-2 md:min-w-[170px]"
+                  className="btn-primary-glow gap-2 md:min-w-[170px]"
                 >
                   <Search size={15} />
                   {searchLoading ? "Searching..." : "Find on Map"}
@@ -503,11 +496,10 @@ export default function CreateEventPage() {
                 Type an address, or use the map below to drop an exact pin. Editing this field manually clears the saved pin.
               </p>
             </div>
-
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-bold uppercase tracking-wider text-cyan-400">Pin Exact Meetup Spot</p>
+                  <p className="text-sm font-bold uppercase tracking-wider text-red-400">Pin Exact Meetup Spot</p>
                   <p className="mt-1 text-xs text-zinc-400">
                     Click on the map or use your current location to save coordinates for the Maps page.
                   </p>
@@ -517,7 +509,7 @@ export default function CreateEventPage() {
                     type="button"
                     onClick={locateMe}
                     disabled={locationLoading || !!mapError}
-                    className="btn-ghost gap-2"
+                    className="btn-primary-glow gap-2"
                   >
                     <Crosshair size={15} />
                     {locationLoading ? "Locating..." : "Use My Location"}
@@ -533,23 +525,21 @@ export default function CreateEventPage() {
                   </button>
                 </div>
               </div>
-
               {mapError ? (
                 <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                   {mapError}
                 </div>
               ) : (
-                <div className="relative overflow-hidden rounded-2xl border-2 border-cyan-500/30">
+                <div className="relative overflow-hidden rounded-2xl border-2 border-red-600/30">
                   {mapLoading ? (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-zinc-950/80 text-sm text-cyan-300">
+                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/80 text-sm text-red-400">
                       Loading map...
                     </div>
                   ) : null}
-                  <div ref={mapRef} className="h-[320px] w-full bg-gradient-to-br from-slate-900 to-zinc-950" />
+                  <div ref={mapRef} className="h-[320px] w-full bg-gradient-to-br from-black to-zinc-950" />
                 </div>
               )}
-
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-950/40 px-4 py-3 text-sm text-zinc-300">
+              <div className="rounded-2xl border border-zinc-800 bg-black/40 px-4 py-3 text-sm text-zinc-300">
                 {form.coordinates ? (
                   <span>
                     Pin saved at {form.coordinates.latitude.toFixed(5)}, {form.coordinates.longitude.toFixed(5)}
@@ -559,15 +549,14 @@ export default function CreateEventPage() {
                 )}
               </div>
             </div>
-
             <div>
-              <label className="text-sm font-bold uppercase tracking-wider text-rose-400 mb-3 block">
+              <label className="text-sm font-bold uppercase tracking-wider text-red-400 mb-3 block">
                 🖼️ Event Cover Image (Optional)
               </label>
               <div className="relative">
                 {form.image ? (
                   <div className="space-y-3">
-                    <div className="rounded-xl overflow-hidden border-2 border-rose-500/30 max-h-48">
+                    <div className="rounded-xl overflow-hidden border-2 border-red-600/30 max-h-48">
                       <img
                         src={form.image}
                         alt="Event cover"
@@ -591,30 +580,28 @@ export default function CreateEventPage() {
                       onChange={handleImageUpload}
                       className="sr-only"
                     />
-                    <div className="border-2 border-dashed border-rose-500/30 rounded-xl p-6 text-center hover:border-rose-500/50 transition">
-                      <p className="text-sm text-rose-400 font-semibold">Click to upload or drag and drop</p>
+                    <div className="border-2 border-dashed border-red-600/30 rounded-xl p-6 text-center hover:border-red-600/50 transition">
+                      <p className="text-sm text-red-400 font-semibold">Click to upload or drag and drop</p>
                       <p className="text-xs text-zinc-400 mt-1">PNG, JPG, GIF up to 5MB</p>
                     </div>
                   </label>
                 )}
               </div>
             </div>
-
             <div>
-              <label className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-orange-400 mb-3">
+              <label className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-red-400 mb-3">
                 <FileText size={16} />
                 Description
               </label>
               <textarea
-                className="input w-full px-4 py-3 rounded-xl border-2 border-orange-500/30 bg-orange-500/5 text-white placeholder-orange-600 transition focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 min-h-[140px] resize-none"
+                className="input w-full px-4 py-3 rounded-xl border-2 border-red-600/40 bg-black/60 text-white placeholder:text-red-400 transition focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/30 min-h-[140px] resize-none shadow-red-glow-sm"
                 placeholder="Distance, pace, meetup instructions..."
                 value={form.description}
                 onChange={(event) => update("description", event.target.value)}
               />
             </div>
-
             <div>
-              <EngagingButton disabled={loading} className="w-full py-4 text-base font-bold uppercase tracking-wider">
+              <EngagingButton disabled={loading} className="w-full py-4 text-base font-bold uppercase tracking-wider btn-primary-glow bg-gradient-to-r from-red-600 via-red-500 to-red-700 hover:from-red-700 hover:to-red-600 shadow-red-glow-lg">
                 {loading ? "Creating event..." : "Create Event and Invite Crew"}
               </EngagingButton>
             </div>
