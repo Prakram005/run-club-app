@@ -272,9 +272,6 @@ export default function MapPage() {
     };
   }, [soundEnabled]);
 
-  useEffect(() => {
-    focusedEventRef.current = eventId;
-
   const locateMe = () => {
     if (!navigator.geolocation) {
       setGeoError("Geolocation is not supported.");
@@ -347,7 +344,7 @@ export default function MapPage() {
     <div className="space-y-6 relative">
       <audio 
         ref={audioRef} 
-        src="data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA=="
+        src="data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==" 
         preload="auto" 
       />
       {animationsEnabled && <FloatingParticles />}
