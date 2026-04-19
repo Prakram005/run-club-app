@@ -67,6 +67,8 @@ export default function MapPage() {
   const markersRef = useRef([]);
   const userLocationMarkerRef = useRef(null);
   const focusedEventRef = useRef(null);
+  const heatmapRef = useRef(null);
+  const audioRef = useRef(null);
 
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -75,8 +77,9 @@ export default function MapPage() {
   const [mapsError, setMapsError] = useState("");
   const [selected, setSelected] = useState(null);
   const [liveTracking, setLiveTracking] = useState(true);
-  const [, setShowHeatmap] = useState(false);
+  const [showHeatmap, setShowHeatmap] = useState(false);
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(false);
   const [userPosition, setUserPosition] = useState(null);
   const eventId = searchParams.get("eventId");
 
@@ -131,6 +134,10 @@ export default function MapPage() {
     });
 
     marker.addListener("click", () => {
+      if (soundEnabled && audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(() => {});
+      }
       setSelected(event);
       infoWindowRef.current?.setContent(
         `<div style="background:#0f0f1e;color:#f4f4f5;padding:12px 16px;border-radius:12px;min-width:220px;border:1px solid #06b6d4;">
@@ -160,7 +167,7 @@ export default function MapPage() {
     }
 
     markersRef.current.push(marker);
-  }, []);
+  }, [soundEnabled]);
 
   const placeMarkers = useCallback(() => {
     if (!mapInstance.current || !geocoderRef.current || !window.google?.maps) {
@@ -196,9 +203,77 @@ export default function MapPage() {
     }
   }, [loading, mapsError, placeMarkers]);
 
+  // Heatmap effect
+  useEffect(() => {
+    if (!mapInstance.current || !window.google?.maps || !showHeatmap) {
+      if (heatmapRef.current) {
+        heatmapRef.current.setMap(null);
+        heatmapRef.current = null;
+      }
+      return;
+    }
+
+    const heatmapData = events
+      .filter((event) => new Date(event.date) >= new Date())
+      .map((event) => {
+        const coords = getEventCoordinates(event);
+        if (coords) {
+          return new window.google.maps.LatLng(coords.lat, coords.lng);
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    if (heatmapData.length === 0) {
+      if (heatmapRef.current) {
+        heatmapRef.current.setMap(null);
+        heatmapRef.current = null;
+      }
+      return;
+    }
+
+    if (heatmapRef.current) {
+      heatmapRef.current.setMap(null);
+    }
+
+    heatmapRef.current = new window.google.maps.visualization.HeatmapLayer({
+      data: heatmapData,
+      map: mapInstance.current,
+      radius: 25,
+      opacity: 0.6,
+      gradient: [
+        "#0a0a14",
+        "#06b6d4",
+        "#0891b2",
+        "#8b5cf6",
+        "#ec4899"
+      ]
+    });
+  }, [showHeatmap, events]);
+
+  // Sound effect playback
+  useEffect(() => {
+    if (!soundEnabled || !audioRef.current) return;
+
+    // Play a subtle notification sound on marker hover
+    const playSound = () => {
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(() => {
+          // Audio playback silently fails if there's any issue
+        });
+      }
+    };
+
+    window.playMapSound = playSound;
+
+    return () => {
+      delete window.playMapSound;
+    };
+  }, [soundEnabled]);
+
   useEffect(() => {
     focusedEventRef.current = eventId;
-  }, [eventId]);
 
   const locateMe = () => {
     if (!navigator.geolocation) {
@@ -270,6 +345,11 @@ export default function MapPage() {
 
   return (
     <div className="space-y-6 relative">
+      <audio 
+        ref={audioRef} 
+        src="data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA=="
+        preload="auto" 
+      />
       {animationsEnabled && <FloatingParticles />}
 
       <motion.div
@@ -297,6 +377,11 @@ export default function MapPage() {
             onToggleLiveTracking={setLiveTracking}
             onToggleHeatmap={setShowHeatmap}
             onToggleAnimations={setAnimationsEnabled}
+            onToggleSound={setSoundEnabled}
+            liveTracking={liveTracking}
+            showHeatmap={showHeatmap}
+            animationsEnabled={animationsEnabled}
+            soundEnabled={soundEnabled}
           />
           <EngagingButton onClick={locateMe} disabled={geoLoading || loading || !!mapsError} icon={Navigation} variant="primary">
             {geoLoading ? "Locating..." : "Locate Me"}

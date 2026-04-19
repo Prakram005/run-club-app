@@ -1,28 +1,16 @@
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Volume2, VolumeX, Map, Zap } from "lucide-react";
-import { useState } from "react";
 
-export default function MapControls({ onToggleLiveTracking, onToggleHeatmap, onToggleAnimations }) {
-  const [showLiveTracking, setShowLiveTracking] = useState(true);
-  const [showHeatmap, setShowHeatmap] = useState(false);
-  const [animationsEnabled, setAnimationsEnabled] = useState(true);
-  const [soundEnabled, setSoundEnabled] = useState(false);
-
-  const handleLiveTracking = () => {
-    setShowLiveTracking(!showLiveTracking);
-    onToggleLiveTracking?.(!showLiveTracking);
-  };
-
-  const handleHeatmap = () => {
-    setShowHeatmap(!showHeatmap);
-    onToggleHeatmap?.(!showHeatmap);
-  };
-
-  const handleAnimations = () => {
-    setAnimationsEnabled(!animationsEnabled);
-    onToggleAnimations?.(!animationsEnabled);
-  };
-
+export default function MapControls({ 
+  onToggleLiveTracking, 
+  onToggleHeatmap, 
+  onToggleAnimations,
+  onToggleSound,
+  liveTracking = true,
+  showHeatmap = false,
+  animationsEnabled = true,
+  soundEnabled = false
+}) {
   const ToggleButton = ({ icon: Icon, label, isActive, onClick }) => (
     <motion.button
       onClick={onClick}
@@ -53,28 +41,28 @@ export default function MapControls({ onToggleLiveTracking, onToggleHeatmap, onT
       className="flex flex-wrap gap-2 p-4 rounded-xl bg-zinc-900/80 backdrop-blur border border-zinc-800"
     >
       <ToggleButton
-        icon={showLiveTracking ? Eye : EyeOff}
+        icon={liveTracking ? Eye : EyeOff}
         label="Live Tracking"
-        isActive={showLiveTracking}
-        onClick={handleLiveTracking}
+        isActive={liveTracking}
+        onClick={() => onToggleLiveTracking?.(!liveTracking)}
       />
       <ToggleButton
         icon={Map}
         label="Heat Map"
         isActive={showHeatmap}
-        onClick={handleHeatmap}
+        onClick={() => onToggleHeatmap?.(!showHeatmap)}
       />
       <ToggleButton
         icon={Zap}
         label="Animations"
         isActive={animationsEnabled}
-        onClick={handleAnimations}
+        onClick={() => onToggleAnimations?.(!animationsEnabled)}
       />
       <ToggleButton
         icon={soundEnabled ? Volume2 : VolumeX}
         label="Sound"
         isActive={soundEnabled}
-        onClick={() => setSoundEnabled(!soundEnabled)}
+        onClick={() => onToggleSound?.(!soundEnabled)}
       />
     </motion.div>
   );
