@@ -56,16 +56,16 @@ export default function NotificationsDropdown() {
     <div className="relative">
       <motion.button
         onClick={() => setExpanded(!expanded)}
-        className="relative p-2 text-cyan-400 hover:text-cyan-300 transition"
+        className="relative p-2.5 text-red-400 hover:text-red-300 transition-colors"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
       >
-        <Bell size={20} />
+        <Bell size={20} className="stroke-2" />
         {unreadCount > 0 && (
           <motion.span
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="absolute top-0 right-0 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-bold"
+            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-600 text-white text-xs flex items-center justify-center font-bold shadow-red-glow-sm"
           >
             {unreadCount > 9 ? "9+" : unreadCount}
           </motion.span>
@@ -86,23 +86,23 @@ export default function NotificationsDropdown() {
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className="absolute right-0 top-12 w-80 max-h-96 rounded-2xl border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur z-50 overflow-hidden flex flex-col"
+              className="absolute right-0 top-12 w-80 max-h-96 rounded-xl border border-red-600/40 bg-gradient-to-br from-red-950/30 to-black/60 backdrop-blur-xl z-50 overflow-hidden flex flex-col shadow-red-glow-lg"
             >
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-cyan-500/20 px-4 py-3">
+              <div className="flex items-center justify-between border-b border-red-600/30 px-4 py-3 bg-black/40">
                 <div>
-                  <p className="text-sm font-bold text-cyan-400">Notifications</p>
+                  <p className="text-sm font-bold text-red-400">Notifications</p>
                   {unreadCount > 0 && (
-                    <p className="text-xs text-zinc-400">{unreadCount} unread</p>
+                    <p className="text-xs text-gray-400">{unreadCount} unread</p>
                   )}
                 </div>
                 {unreadCount > 0 && (
                   <motion.button
                     onClick={markAllAsRead}
-                    className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition"
+                    className="text-xs font-semibold text-red-400 hover:text-red-300 transition"
                     whileHover={{ scale: 1.05 }}
                   >
-                    Mark all read
+                    Mark all
                   </motion.button>
                 )}
               </div>
@@ -110,11 +110,11 @@ export default function NotificationsDropdown() {
               {/* Notifications List */}
               <div className="flex-1 overflow-y-auto space-y-2 p-3">
                 {loading ? (
-                  <div className="flex items-center justify-center py-8 text-zinc-400">
+                  <div className="flex items-center justify-center py-8 text-gray-400">
                     <p className="text-sm">Loading...</p>
                   </div>
                 ) : notifications.length === 0 ? (
-                  <div className="flex items-center justify-center py-8 text-zinc-400">
+                  <div className="flex items-center justify-center py-8 text-gray-400">
                     <p className="text-sm">No notifications yet</p>
                   </div>
                 ) : (
@@ -124,21 +124,21 @@ export default function NotificationsDropdown() {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 10 }}
-                      className={`rounded-lg p-3 transition ${
+                      className={`rounded-lg p-3 transition-all ${
                         notification.read
-                          ? "bg-zinc-800/30"
-                          : "bg-cyan-500/20 border-l-2 border-cyan-500"
-                      }`}
+                          ? "bg-black/30"
+                          : "bg-red-600/20 border-l-2 border-red-600 shadow-red-glow-sm"
+                      } hover:bg-red-600/25`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
                           <p className="text-sm font-semibold text-white">
                             {notification.title}
                           </p>
-                          <p className="text-xs text-zinc-400 mt-1">
+                          <p className="text-xs text-gray-400 mt-1">
                             {notification.message}
                           </p>
-                          <p className="text-xs text-zinc-500 mt-2">
+                          <p className="text-xs text-gray-500 mt-2">
                             {new Date(notification.createdAt).toLocaleDateString()}
                           </p>
                         </div>
@@ -146,7 +146,7 @@ export default function NotificationsDropdown() {
                           {!notification.read && (
                             <motion.button
                               onClick={() => markAsRead(notification._id)}
-                              className="text-cyan-400 hover:text-cyan-300"
+                              className="text-red-400 hover:text-red-300 transition"
                               whileHover={{ scale: 1.1 }}
                             >
                               <Check size={14} />
@@ -154,7 +154,7 @@ export default function NotificationsDropdown() {
                           )}
                           <motion.button
                             onClick={() => deleteNotification(notification._id)}
-                            className="text-zinc-500 hover:text-zinc-400"
+                            className="text-gray-500 hover:text-gray-400 transition"
                             whileHover={{ scale: 1.1 }}
                           >
                             <X size={14} />
