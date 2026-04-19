@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,9 +16,9 @@ body,
 
 body {
   margin: 0;
-  background: linear-gradient(135deg, #09090b 0%, #1a1a2e 50%, #16213e 100%);
-  color: #f4f4f5;
-  font-family: "Segoe UI", system-ui, sans-serif;
+  background: linear-gradient(135deg, #000000 0%, #0f0f0f 25%, #1a1a1a 50%, #0f0f0f 75%, #000000 100%);
+  color: #ffffff;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 * {
@@ -28,51 +30,74 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar with RED theme */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(106, 214, 255, 0.5);
-  border-radius: 4px;
+  background: rgba(255, 26, 26, 0.6);
+  border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(106, 214, 255, 0.8);
+  background: rgba(255, 26, 26, 0.9);
 }
 
 @layer components {
+  /* Glassmorphism + Neumorphism Cards */
   .card {
-    @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md;
+    @apply rounded-2xl border border-red-600/20 bg-gradient-to-br from-black/40 to-red-950/10 backdrop-blur-xl backdrop-filter shadow-glass transition-all duration-300 hover:border-red-600/40 hover:shadow-red-glow;
   }
 
+  .card-elevated {
+    @apply rounded-2xl border border-red-600/30 bg-gradient-to-br from-red-900/15 via-black/50 to-black/70 backdrop-blur-xl shadow-neumorphic transition-all duration-300;
+  }
+
+  .card-hover {
+    @apply cursor-pointer transition-all duration-300 hover:shadow-red-glow-lg hover:shadow-lg hover:scale-105;
+  }
+
+  /* Glassmorphic Input Fields */
   .input {
-    @apply w-full rounded-xl border border-white/20 bg-white/5 backdrop-blur-md px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30;
+    @apply w-full rounded-xl border border-red-600/20 bg-black/40 backdrop-blur-md px-4 py-3 text-sm text-white outline-none transition placeholder:text-gray-500 focus:border-red-600 focus:ring-2 focus:ring-red-600/30 focus:shadow-red-glow-sm;
+  }
+
+  .input-focus {
+    @apply focus:border-red-600 focus:ring-2 focus:ring-red-600/40 focus:shadow-red-glow;
   }
 
   .label {
-    @apply mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-400;
+    @apply mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-400;
   }
 
+  /* Red Gradient Buttons */
   .btn-primary {
-    @apply relative inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-3 text-sm font-bold text-white transition hover:shadow-lg hover:shadow-cyan-500/50 disabled:opacity-50;
+    @apply relative inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-6 py-3 text-sm font-bold text-white transition-all duration-300 hover:shadow-red-glow-lg hover:scale-105 hover:from-red-500 hover:to-red-600 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary-glow {
+    @apply relative overflow-hidden rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-6 py-3 text-sm font-bold text-white shadow-red-glow transition-all duration-300 hover:shadow-red-glow-lg;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900/50 px-6 py-3 text-sm font-bold text-zinc-200 transition hover:border-cyan-500 hover:text-cyan-300;
+    @apply inline-flex items-center justify-center rounded-xl border border-red-600/30 bg-black/40 px-6 py-3 text-sm font-bold text-gray-200 transition-all duration-300 hover:border-red-600 hover:text-red-400 hover:bg-red-950/20 hover:shadow-red-glow-sm;
   }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center rounded-xl border border-red-500/30 bg-red-500/10 px-6 py-3 text-sm font-bold text-red-300 transition hover:bg-red-500/20;
+    @apply inline-flex items-center justify-center rounded-xl border border-red-600/50 bg-red-600/20 px-6 py-3 text-sm font-bold text-red-300 transition-all duration-300 hover:bg-red-600/30 hover:shadow-red-glow;
+  }
+
+  .btn-subtle {
+    @apply inline-flex items-center justify-center rounded-xl border border-transparent bg-gray-800/50 px-4 py-2 text-xs font-semibold text-gray-300 transition-all duration-300 hover:bg-red-900/30 hover:text-red-300 hover:border-red-600/30;
   }
 }
 
-/* Animations */
+/* Advanced Animations */
 @keyframes shimmer {
   0% {
     background-position: -1000px 0;
@@ -82,26 +107,43 @@ html {
   }
 }
 
-@keyframes pulse-glow {
-  0% {
-    box-shadow: 0 0 0 0 rgba(106, 214, 255, 0.7);
+@keyframes pulse-red {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 26, 26, 0.5);
   }
-  70% {
-    box-shadow: 0 0 0 20px rgba(106, 214, 255, 0);
+  50% {
+    box-shadow: 0 0 40px rgba(255, 26, 26, 0.8);
   }
-  100% {
-    box-shadow: 0 0 0 0 rgba(106, 214, 255, 0);
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
   }
 }
 
 @keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(25px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
@@ -116,20 +158,89 @@ html {
   }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 .animate-shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 26, 26, 0.2), transparent);
   background-size: 1000px 100%;
   animation: shimmer 3s infinite;
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 2s infinite;
+.animate-pulse-red {
+  animation: pulse-red 2s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
 }
 
 .animate-fade-in-up {
-  animation: fade-in-up 0.6s ease-out;
+  animation: fade-in-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .animate-count-up {
   animation: count-up 0.6s ease-out;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* Glassmorphism utilities */
+.glass-effect {
+  @apply backdrop-blur-xl backdrop-filter bg-black/30;
+}
+
+.glass-border {
+  @apply border border-red-600/20;
+}
+
+/* Red Glow effects */
+.glow-red {
+  @apply shadow-red-glow;
+}
+
+.glow-red-lg {
+  @apply shadow-red-glow-lg;
+}
+
+.glow-red-sm {
+  @apply shadow-red-glow-sm;
+}
+
+/* Text gradients */
+.text-gradient-red {
+  @apply bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent;
+}
+
+.text-gradient-white-red {
+  @apply bg-gradient-to-r from-white to-red-600 bg-clip-text text-transparent;
 }

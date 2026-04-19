@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
-export function AnimatedStat({ label, value, icon: Icon, color = "cyan", delay = 0 }) {
+export function AnimatedStat({ label, value, icon: Icon, color = "red", delay = 0 }) {
   const [displayValue, setDisplayValue] = useState(0);
   const numValue = typeof value === "string" ? parseInt(value) : value;
 
@@ -21,10 +21,19 @@ export function AnimatedStat({ label, value, icon: Icon, color = "cyan", delay =
   }, [numValue]);
 
   const colorClasses = {
+    red: "from-red-600 to-red-700",
     cyan: "from-cyan-500 to-blue-500",
     purple: "from-purple-500 to-pink-500",
     green: "from-green-500 to-emerald-500",
     orange: "from-orange-500 to-yellow-500"
+  };
+
+  const iconColorMap = {
+    red: "text-red-400",
+    cyan: "text-cyan-400",
+    purple: "text-purple-400",
+    green: "text-green-400",
+    orange: "text-orange-400"
   };
 
   return (
@@ -33,12 +42,12 @@ export function AnimatedStat({ label, value, icon: Icon, color = "cyan", delay =
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
       whileHover={{ scale: 1.05 }}
-      className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${colorClasses[color]} p-0.5 backdrop-blur-md`}
+      className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${colorClasses[color]} p-0.5 backdrop-blur-md shadow-red-glow-sm`}
     >
-      <div className="rounded-[15px] bg-zinc-950/90 backdrop-blur-sm p-6 border border-white/10">
+      <div className="rounded-[15px] bg-black/70 backdrop-blur-sm p-6 border border-white/5">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">{label}</p>
-          {Icon && <Icon size={18} className={`text-${color}-400`} />}
+          <p className="text-xs font-bold uppercase tracking-wider text-gray-400">{label}</p>
+          {Icon && <Icon size={18} className={iconColorMap[color]} />}
         </div>
         <p className="text-4xl font-bold text-white font-display">{displayValue}</p>
       </div>
@@ -46,11 +55,12 @@ export function AnimatedStat({ label, value, icon: Icon, color = "cyan", delay =
   );
 }
 
-export function StatCard({ title, value, change, icon: Icon, color = "cyan" }) {
+export function StatCard({ title, value, change, icon: Icon, color = "red" }) {
   const colorMap = {
-    cyan: { border: "border-cyan-500/30", text: "text-cyan-400", bg: "bg-cyan-500/10" },
-    purple: { border: "border-purple-500/30", text: "text-purple-400", bg: "bg-purple-500/10" },
-    green: { border: "border-green-500/30", text: "text-green-400", bg: "bg-green-500/10" }
+    red: { border: "border-red-600/40", text: "text-red-400", bg: "bg-red-600/10", glow: "shadow-red-glow-sm" },
+    cyan: { border: "border-cyan-500/30", text: "text-cyan-400", bg: "bg-cyan-500/10", glow: "" },
+    purple: { border: "border-purple-500/30", text: "text-purple-400", bg: "bg-purple-500/10", glow: "" },
+    green: { border: "border-green-500/30", text: "text-green-400", bg: "bg-green-500/10", glow: "" }
   };
 
   const colors = colorMap[color];
@@ -59,8 +69,8 @@ export function StatCard({ title, value, change, icon: Icon, color = "cyan" }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ scale: 1.02, borderColor: "rgba(255,255,255,0.2)" }}
-      className={`rounded-2xl border-2 ${colors.border} ${colors.bg} p-6 backdrop-blur-md transition-all`}
+      whileHover={{ scale: 1.02, borderColor: "rgba(255,26,26,0.4)" }}
+      className={`rounded-2xl border-2 ${colors.border} ${colors.bg} p-6 backdrop-blur-md transition-all ${colors.glow}`}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">

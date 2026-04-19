@@ -70,13 +70,13 @@ export default function DashboardPage() {
       <motion.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-cyan-500/10 to-purple-500/10 border-2 border-cyan-500/30 p-8 md:p-12"
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-red-950/30 to-black border-2 border-red-600/40 p-8 md:p-12 shadow-red-glow"
       >
         {/* Animated background gradient */}
         <motion.div
-          animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.6, 0.3] }}
+          animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.4, 0.2] }}
           transition={{ duration: 8, repeat: Infinity }}
-          className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-3xl"
+          className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-red-900/10 rounded-3xl"
         />
 
         <div className="relative z-10">
@@ -86,23 +86,23 @@ export default function DashboardPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.1 }}
-                className="text-xs font-bold uppercase tracking-[0.35em] text-cyan-400"
+                className="text-xs font-bold uppercase tracking-[0.35em] text-red-400"
               >
-                🏃 Welcome back, Runner
+                🔥 Welcome back, Runner
               </motion.p>
               <motion.h1
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="mt-3 font-display text-5xl font-black bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent"
+                className="mt-3 font-display text-5xl font-black text-gradient-white-red"
               >
-                Let's Keep Moving
+                Keep Moving
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="mt-3 text-lg text-zinc-300"
+                className="mt-3 text-lg text-gray-300"
               >
                 {user?.name?.split(" ")[0] || "Runner"}, your crew is waiting.
               </motion.p>
@@ -111,10 +111,10 @@ export default function DashboardPage() {
               onClick={() => navigate("/create")}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold uppercase tracking-wider overflow-hidden shadow-lg shadow-cyan-500/50 hover:shadow-cyan-500/75 transition-shadow md:flex-shrink-0"
+              className="btn-primary-glow gap-2 md:flex-shrink-0"
             >
               <motion.div
-                className="absolute inset-0 bg-white/20"
+                className="absolute inset-0 bg-white/20 rounded-xl"
                 initial={{ x: "-100%" }}
                 whileHover={{ x: "100%" }}
                 transition={{ duration: 0.5 }}
@@ -135,10 +135,10 @@ export default function DashboardPage() {
         transition={{ delay: 0.2, staggerChildren: 0.1 }}
         className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4"
       >
-        <AnimatedStat label="Events Created" value={myCreated.length} icon={Calendar} color="cyan" delay={0} />
-        <AnimatedStat label="Events Joined" value={myJoined.length} icon={Users} color="purple" delay={0.1} />
-        <AnimatedStat label="Upcoming Runs" value={upcoming.length} icon={Zap} color="green" delay={0.2} />
-        <AnimatedStat label="Badges Earned" value={badges.length} icon={Trophy} color="orange" delay={0.3} />
+        <AnimatedStat label="Events Created" value={myCreated.length} icon={Calendar} color="red" delay={0} />
+        <AnimatedStat label="Events Joined" value={myJoined.length} icon={Users} color="red" delay={0.1} />
+        <AnimatedStat label="Upcoming Runs" value={upcoming.length} icon={Zap} color="red" delay={0.2} />
+        <AnimatedStat label="Badges Earned" value={badges.length} icon={Trophy} color="red" delay={0.3} />
       </motion.section>
 
       {/* Featured Events */}
@@ -150,12 +150,12 @@ export default function DashboardPage() {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h2 className="font-display text-3xl font-bold text-white">My Upcoming Runs</h2>
-            <p className="mt-2 text-sm text-zinc-400">Stay connected with your crew</p>
+            <p className="mt-2 text-sm text-gray-400">Stay connected with your crew</p>
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
             onClick={() => navigate("/events")}
-            className="text-sm font-semibold text-cyan-400 hover:text-cyan-300 transition uppercase tracking-wider"
+            className="text-sm font-semibold text-red-400 hover:text-red-300 transition uppercase tracking-wider"
           >
             Browse All →
           </motion.button>
@@ -171,15 +171,15 @@ export default function DashboardPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="rounded-2xl border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-purple-500/5 p-12 text-center backdrop-blur-md"
+            className="rounded-2xl border-2 border-red-600/30 bg-gradient-to-br from-red-950/10 to-black p-12 text-center backdrop-blur-md"
           >
-            <Zap size={48} className="mx-auto mb-4 text-cyan-400" />
+            <Zap size={48} className="mx-auto mb-4 text-red-400" />
             <p className="font-display text-2xl font-bold text-white">No upcoming runs yet</p>
-            <p className="mt-2 text-zinc-400">Create an event or join one to get started.</p>
+            <p className="mt-2 text-gray-400">Create an event or join one to get started.</p>
             <motion.button
               whileHover={{ scale: 1.05 }}
               onClick={() => navigate("/create")}
-              className="mt-6 px-6 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold"
+              className="btn-primary mt-6"
             >
               Create Run
             </motion.button>
@@ -208,7 +208,7 @@ export default function DashboardPage() {
       >
         <div className="mb-8">
           <h2 className="font-display text-3xl font-bold text-white">🏆 Your Badges</h2>
-          <p className="mt-2 text-sm text-zinc-400">Achievements unlock at milestones</p>
+          <p className="mt-2 text-sm text-gray-400">Achievements unlock at milestones</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {badgeDefinitions.map((badge, idx) => {
@@ -222,24 +222,24 @@ export default function DashboardPage() {
                 whileHover={earned ? { scale: 1.05 } : {}}
                 className={`relative overflow-hidden rounded-2xl p-6 backdrop-blur-md transition-all ${
                   earned
-                    ? "border-2 border-yellow-500/50 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 shadow-lg shadow-yellow-500/20"
-                    : "border-2 border-zinc-700/50 bg-white/5 opacity-50"
+                    ? "border-2 border-red-600/60 bg-gradient-to-br from-red-600/25 to-red-900/15 shadow-red-glow"
+                    : "border-2 border-gray-700/30 bg-black/40 opacity-50"
                 }`}
               >
                 {earned && (
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 3, repeat: Infinity, linear: true }}
-                    className="absolute top-2 right-2 w-8 h-8 border-2 border-yellow-500/50 rounded-full"
+                    className="absolute top-2 right-2 w-8 h-8 border-2 border-red-500/50 rounded-full"
                   />
                 )}
                 <p className="text-lg font-bold text-white">{badge.label}</p>
-                <p className="mt-2 text-xs text-zinc-400">
+                <p className="mt-2 text-xs text-gray-400">
                   {badge.source === "created"
                     ? `Organize ${badge.threshold} event${badge.threshold > 1 ? "s" : ""}`
                     : `Join ${badge.threshold} event${badge.threshold > 1 ? "s" : ""}`}
                 </p>
-                <p className={`mt-4 text-xs font-bold uppercase tracking-wider ${earned ? "text-yellow-400" : "text-zinc-500"}`}>
+                <p className={`mt-4 text-xs font-bold uppercase tracking-wider ${earned ? "text-red-400" : "text-gray-500"}`}>
                   {earned ? "✨ Unlocked" : "🔒 Locked"}
                 </p>
               </motion.div>
