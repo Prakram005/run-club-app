@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Search, SortAsc, SortDesc, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import EventCard from "../components/events/EventCard";
 import EventFilter from "../components/events/EventFilter";
 import { EmptyState, EventCardSkeleton } from "../components/ui";
@@ -100,35 +101,56 @@ export default function EventsPage() {
   ).length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="space-y-8">
+      {/* Page Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-wrap items-end justify-between gap-4"
+      >
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-400">Community</p>
-          <h1 className="mt-2 font-display text-4xl font-bold">Events</h1>
-          <p className="mt-2 text-sm text-zinc-400">Find a run. Join the crew. Show up.</p>
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-red-400">🔥 Community</p>
+          <h1 className="mt-2 font-display text-4xl font-bold text-gradient-white-red">Events</h1>
+          <p className="mt-2 text-sm text-gray-400">Find a run. Join the crew. Show up and crush it.</p>
         </div>
-        <button onClick={() => navigate("/create")} className="btn-primary gap-2">
-          <Plus size={16} />
+        <motion.button
+          onClick={() => navigate("/create")}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="btn-primary-glow gap-2"
+        >
+          <Plus size={18} />
           Create Event
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
-      <div className="flex flex-wrap gap-2 rounded-2xl border border-zinc-800 bg-zinc-900 p-1">
+      {/* Tab Navigation */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1 }}
+        className="flex flex-wrap gap-2 rounded-xl border border-red-600/30 bg-black/40 p-1 backdrop-blur"
+      >
         {tabs.map((item) => (
-          <button
+          <motion.button
             key={item.id}
             onClick={() => setTab(item.id)}
-            className={`rounded-xl px-4 py-2 text-sm transition ${
-              tab === item.id ? "bg-brand-400 text-zinc-950" : "text-zinc-400 hover:text-white"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className={`rounded-lg px-5 py-2.5 text-sm font-semibold transition-all ${
+              tab === item.id
+                ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-red-glow"
+                : "text-gray-400 hover:text-red-400"
             }`}
           >
             {item.label}
             {item.id === "my" && myCount > 0 ? ` (${myCount})` : ""}
             {item.id === "joined" && joinedCount > 0 ? ` (${joinedCount})` : ""}
-          </button>
+          </motion.button>
         ))}
-      </div>
+      </motion.div>
 
+      {/* Filters */}
       <EventFilter 
         onFilter={setFilters} 
         onReset={() => setFilters({
@@ -140,9 +162,15 @@ export default function EventsPage() {
         })}
       />
 
-      <div className="flex flex-wrap gap-3">
-        <div className="relative min-w-[220px] flex-1">
-          <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+      {/* Search & Sort */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="flex flex-wrap gap-3"
+      >
+        <div className="relative min-w-[240px] flex-1">
+          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-red-400/50" />
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
@@ -150,12 +178,18 @@ export default function EventsPage() {
             placeholder="Search by title or location"
           />
         </div>
-        <button onClick={() => setSort(sort === "asc" ? "desc" : "asc")} className="btn-ghost gap-2">
-          {sort === "asc" ? <SortAsc size={15} /> : <SortDesc size={15} />}
+        <motion.button
+          onClick={() => setSort(sort === "asc" ? "desc" : "asc")}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="btn-ghost gap-2"
+        >
+          {sort === "asc" ? <SortAsc size={16} /> : <SortDesc size={16} />}
           {sort === "asc" ? "Earliest" : "Latest"}
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
+      {/* Events List */}
       {loading ? (
         <div className="grid gap-4 md:grid-cols-2">
           {[1, 2, 3, 4, 5, 6].map((item) => (
@@ -183,23 +217,43 @@ export default function EventsPage() {
           }
           action={
             tab === "my" ? (
-              <button onClick={() => navigate("/create")} className="btn-primary gap-2">
-                <Plus size={15} />
+              <motion.button
+                onClick={() => navigate("/create")}
+                whileHover={{ scale: 1.05 }}
+                className="btn-primary gap-2"
+              >
+                <Plus size={16} />
                 Create Event
-              </button>
+              </motion.button>
             ) : (
-              <button onClick={() => setTab("all")} className="btn-ghost">
+              <motion.button
+                onClick={() => setTab("all")}
+                whileHover={{ scale: 1.05 }}
+                className="btn-ghost"
+              >
                 Browse All Events
-              </button>
+              </motion.button>
             )
           }
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          {filtered.map((event) => (
-            <EventCard key={event._id} event={event} onRefresh={load} />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ staggerChildren: 0.1 }}
+          className="grid gap-4 md:grid-cols-2"
+        >
+          {filtered.map((event, index) => (
+            <motion.div
+              key={event._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+            >
+              <EventCard event={event} onRefresh={load} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );

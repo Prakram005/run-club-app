@@ -54,20 +54,20 @@ export default function EventFilter({ onFilter, onReset }) {
     <motion.div className="space-y-4">
       <motion.button
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center justify-between w-full px-4 py-3 rounded-xl bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border-2 border-cyan-500/30 hover:border-cyan-500/50 transition"
+        className="flex items-center justify-between w-full px-4 py-3 rounded-xl bg-gradient-to-r from-red-950/30 to-black border border-red-600/40 hover:border-red-600/60 transition-all hover:shadow-red-glow-sm"
         whileHover={{ scale: 1.02 }}
       >
         <div className="flex items-center gap-3">
-          <span className="text-sm font-bold uppercase text-cyan-400">🔍 Filters</span>
+          <span className="text-sm font-bold uppercase text-red-400">🔍 Filters</span>
           {activeFilterCount > 0 && (
-            <span className="px-2 py-1 rounded-full bg-cyan-500/20 text-xs font-bold text-cyan-300">
+            <span className="px-3 py-1 rounded-full bg-red-600/30 text-xs font-bold text-red-300 border border-red-600/20">
               {activeFilterCount} active
             </span>
           )}
         </div>
         <ChevronDown
           size={18}
-          className={`transition ${expanded ? "rotate-180" : ""} text-cyan-400`}
+          className={`transition ${expanded ? "rotate-180" : ""} text-red-400`}
         />
       </motion.button>
 
@@ -75,11 +75,11 @@ export default function EventFilter({ onFilter, onReset }) {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card p-6 border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 space-y-6"
+          className="card-elevated p-6 border border-red-600/40 space-y-6"
         >
           {/* Difficulty Filter */}
           <div>
-            <p className="text-sm font-bold uppercase text-indigo-400 mb-3">⛰️ Difficulty</p>
+            <p className="text-sm font-bold uppercase text-red-400 mb-3">⛰️ Difficulty</p>
             <div className="flex flex-wrap gap-2">
               {["beginner", "intermediate", "advanced"].map((level) => (
                 <motion.button
@@ -87,8 +87,8 @@ export default function EventFilter({ onFilter, onReset }) {
                   onClick={() => handleFilterChange("difficulty", level)}
                   className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
                     filters.difficulty.includes(level)
-                      ? "bg-indigo-500 text-white"
-                      : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                      ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-red-glow"
+                      : "bg-black/50 text-gray-400 border border-red-600/20 hover:border-red-600/50"
                   }`}
                   whileHover={{ scale: 1.05 }}
                 >
@@ -111,8 +111,8 @@ export default function EventFilter({ onFilter, onReset }) {
                   onClick={() => handleFilterChange("terrain", terrain)}
                   className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
                     filters.terrain.includes(terrain)
-                      ? "bg-green-500 text-white"
-                      : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                      ? "bg-green-600 text-white shadow-lg shadow-green-600/30"
+                      : "bg-black/50 text-gray-400 border border-green-600/20 hover:border-green-600/50"
                   }`}
                   whileHover={{ scale: 1.05 }}
                 >
@@ -127,34 +127,34 @@ export default function EventFilter({ onFilter, onReset }) {
 
           {/* Distance Filter */}
           <div>
-            <p className="text-sm font-bold uppercase text-yellow-400 mb-3">📏 Distance (km)</p>
+            <p className="text-sm font-bold uppercase text-purple-400 mb-3">📏 Distance (km)</p>
             <div className="grid gap-3 md:grid-cols-2">
               <input
                 type="number"
                 placeholder="Min"
                 value={filters.minDistance}
                 onChange={(e) => handleFilterChange("minDistance", e.target.value)}
-                className="input px-4 py-2 rounded-lg border-2 border-yellow-500/30 bg-yellow-500/5 text-white placeholder-yellow-600 transition focus:border-yellow-500"
+                className="input px-4 py-2"
               />
               <input
                 type="number"
                 placeholder="Max"
                 value={filters.maxDistance}
                 onChange={(e) => handleFilterChange("maxDistance", e.target.value)}
-                className="input px-4 py-2 rounded-lg border-2 border-yellow-500/30 bg-yellow-500/5 text-white placeholder-yellow-600 transition focus:border-yellow-500"
+                className="input px-4 py-2"
               />
             </div>
           </div>
 
           {/* Pace Filter */}
           <div>
-            <p className="text-sm font-bold uppercase text-lime-400 mb-3">⏱️ Pace</p>
+            <p className="text-sm font-bold uppercase text-blue-400 mb-3">⏱️ Pace</p>
             <input
               type="text"
               placeholder="e.g., 8:00/km"
               value={filters.pace}
               onChange={(e) => handleFilterChange("pace", e.target.value)}
-              className="input w-full px-4 py-2 rounded-lg border-2 border-lime-500/30 bg-lime-500/5 text-white placeholder-lime-600 transition focus:border-lime-500"
+              className="input w-full px-4 py-2"
             />
           </div>
 
@@ -162,7 +162,7 @@ export default function EventFilter({ onFilter, onReset }) {
           <div className="flex gap-3">
             <motion.button
               onClick={applyFilters}
-              className="flex-1 px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold text-sm uppercase transition hover:shadow-lg hover:shadow-cyan-500/50"
+              className="btn-primary flex-1 py-2 text-sm"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -171,7 +171,7 @@ export default function EventFilter({ onFilter, onReset }) {
             {activeFilterCount > 0 && (
               <motion.button
                 onClick={resetFilters}
-                className="px-4 py-2 rounded-lg bg-zinc-800 text-zinc-300 font-bold text-sm transition hover:bg-zinc-700"
+                className="btn-subtle px-4 py-2"
                 whileHover={{ scale: 1.02 }}
               >
                 <X size={16} />
