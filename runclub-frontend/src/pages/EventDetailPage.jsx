@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
-import { ArrowLeft, Calendar, Edit2, Loader2, MapPin, Navigation, Trash2, Users } from "lucide-react";
+import { ArrowLeft, Calendar, Crosshair, Edit2, Loader2, MapPin, Navigation, Search, Trash2, Users, X } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
@@ -45,6 +45,10 @@ export default function EventDetailPage() {
   const mapInstanceRef = useRef(null);
   const markerRef = useRef(null);
   const geocoderRef = useRef(null);
+  const editMapRef = useRef(null);
+  const editMapInstanceRef = useRef(null);
+  const editMarkerRef = useRef(null);
+  const editGeocoderRef = useRef(null);
 
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -53,6 +57,10 @@ export default function EventDetailPage() {
   const [activeTab, setActiveTab] = useState("chat");
   const [mapLoading, setMapLoading] = useState(true);
   const [mapError, setMapError] = useState("");
+  const [editMapLoading, setEditMapLoading] = useState(true);
+  const [editMapError, setEditMapError] = useState("");
+  const [editLocationLoading, setEditLocationLoading] = useState(false);
+  const [editSearchLoading, setEditSearchLoading] = useState(false);
   const [form, setForm] = useState({
     title: "",
     date: "",
@@ -191,6 +199,154 @@ export default function EventDetailPage() {
     };
   }, [event]);
 
+  const placeEditMarker = (position) => {
+    if (!editMapInstanceRef.current || !window.google?.maps) {
+      return;
+    }
+
+    if (!editMarkerRef.current) {
+      editMarkerRef.current = new window.google.maps.Marker({
+        map: editMapInstanceRef.current,
+        draggable: true,
+        icon: {
+          path: window.google.maps.SymbolPath.CIRCLE,
+          scale: 11,
+          fillColor: "#f43f5e",
+          fillOpacity: 0.95,
+          strokeColor: "#ffffff",
+          strokeWeight: 2
+        }
+      });
+
+      editMarkerRef.current.addListener("dragend", (dragEvent) => {
+        const positionFromDrag = {
+          lat: dragEvent.latLng.lat(),
+          lng: dragEvent.latLng.lng()
+        };
+
+        setEditPinnedLocation(positionFromDrag, { reverseGeocode: true, toastMessage: "Pin moved." });
+      });
+    }
+
+    editMarkerRef.current.setPosition(position);
+    editMarkerRef.current.setMap(editMapInstanceRef.current);
+  };
+
+  const setEditPinnedLocation = (position, options = {}) => {
+    const { reverseGeocode = false, toastMessage = "" } = options;
+
+    placeEditMarker(position);
+    editMapInstanceRef.current?.panTo(position);
+    editMapInstanceRef.current?.setZoom(14);
+
+    setForm((current) => ({
+      ...current,
+      coordinates: {
+        latitude: position.lat,
+        longitude: position.lng
+      }
+    }));
+
+    if (!reverseGeocode || !editGeocoderRef.current) {
+      if (toastMessage) {
+        toast.success(toastMessage);
+      }
+      return;
+    }
+
+    editGeocoderRef.current.geocode({ location: position }, (results, status) => {
+      if (status === "OK" && results?.[0]?.formatted_address) {
+        setForm((current) => ({
+          ...current,
+          location: results[0].formatted_address,
+          coordinates: {
+            latitude: position.lat,
+            longitude: position.lng
+          }
+        }));
+      }
+
+      if (toastMessage) {
+        toast.success(toastMessage);
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (!editing) {
+      return;
+    }
+
+    if (!mapsKey || mapsKey === "YOUR_GOOGLE_MAPS_API_KEY") {
+      setEditMapError("Add VITE_GOOGLE_MAPS_KEY to update the event pin.");
+      setEditMapLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    setEditMapError("");
+    setEditMapLoading(true);
+
+    loadGoogleMapsScript(mapsKey)
+      .then(() => {
+        if (cancelled || !editMapRef.current) {
+          return;
+        }
+
+        if (!editMapInstanceRef.current) {
+          editMapInstanceRef.current = new window.google.maps.Map(editMapRef.current, {
+            center: defaultCenter,
+            zoom: 11,
+            styles: mapStyle,
+            disableDefaultUI: true,
+            zoomControl: true
+          });
+        }
+
+        if (!editGeocoderRef.current) {
+          editGeocoderRef.current = new window.google.maps.Geocoder();
+        }
+
+        window.google.maps.event.clearListeners(editMapInstanceRef.current, "click");
+        editMapInstanceRef.current.addListener("click", (clickEvent) => {
+          setEditPinnedLocation(
+            {
+              lat: clickEvent.latLng.lat(),
+              lng: clickEvent.latLng.lng()
+            },
+            { reverseGeocode: true, toastMessage: "Pin dropped." }
+          );
+        });
+
+        const coordinates = getEventCoordinates(form);
+
+        if (coordinates) {
+          placeEditMarker(coordinates);
+          editMapInstanceRef.current.setCenter(coordinates);
+          editMapInstanceRef.current.setZoom(14);
+          setEditMapLoading(false);
+          return;
+        }
+
+        if (editMarkerRef.current) {
+          editMarkerRef.current.setMap(null);
+        }
+
+        setEditMapLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setEditMapError("Failed to load Google Maps for editing.");
+          setEditMapLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [editing, form.coordinates]);
+
   if (loading) {
     return (
       <div className="flex justify-center py-24">
@@ -261,6 +417,81 @@ export default function EventDetailPage() {
     }
   };
 
+  const searchEditLocation = () => {
+    const address = form.location.trim();
+
+    if (!address) {
+      toast.error("Enter a location to search.");
+      return;
+    }
+
+    if (!editGeocoderRef.current) {
+      toast.error("Map is still loading.");
+      return;
+    }
+
+    setEditSearchLoading(true);
+
+    editGeocoderRef.current.geocode({ address }, (results, status) => {
+      if (status !== "OK" || !results?.[0]) {
+        toast.error("Could not find that location.");
+        setEditSearchLoading(false);
+        return;
+      }
+
+      const found = results[0];
+      const position = {
+        lat: found.geometry.location.lat(),
+        lng: found.geometry.location.lng()
+      };
+
+      setForm((current) => ({
+        ...current,
+        location: found.formatted_address
+      }));
+      setEditPinnedLocation(position, { toastMessage: "Location pinned from search." });
+      setEditSearchLoading(false);
+    });
+  };
+
+  const locateEditMe = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported in this browser.");
+      return;
+    }
+
+    setEditLocationLoading(true);
+
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setEditPinnedLocation(
+          {
+            lat: coords.latitude,
+            lng: coords.longitude
+          },
+          { reverseGeocode: true, toastMessage: "Pinned your current location." }
+        );
+        setEditLocationLoading(false);
+      },
+      () => {
+        toast.error("Could not access your location.");
+        setEditLocationLoading(false);
+      }
+    );
+  };
+
+  const clearEditPin = () => {
+    if (editMarkerRef.current) {
+      editMarkerRef.current.setMap(null);
+      editMarkerRef.current = null;
+    }
+
+    setForm((current) => ({
+      ...current,
+      coordinates: null
+    }));
+  };
+
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <button onClick={() => navigate("/events")} className="flex items-center gap-2 text-sm text-zinc-400">
@@ -315,11 +546,88 @@ export default function EventDetailPage() {
 
             <div>
               <label className="label">Location</label>
-              <input
-                className="input"
-                value={form.location}
-                onChange={(event) => setForm((current) => ({ ...current, location: event.target.value }))}
-              />
+              <div className="flex flex-col gap-3 md:flex-row">
+                <input
+                  className="input"
+                  value={form.location}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      location: event.target.value,
+                      coordinates: null
+                    }))
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={searchEditLocation}
+                  disabled={editSearchLoading || editMapLoading || !!editMapError}
+                  className="btn-ghost gap-2 md:min-w-[170px]"
+                >
+                  <Search size={15} />
+                  {editSearchLoading ? "Searching..." : "Find on Map"}
+                </button>
+              </div>
+              <p className="mt-2 text-xs text-zinc-500">
+                Search a place, click the map, or use your location to update the exact event pin.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-wider text-cyan-400">Update Event Pin</p>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    Saving will update both the address and coordinates used in the Maps view.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={locateEditMe}
+                    disabled={editLocationLoading || !!editMapError}
+                    className="btn-ghost gap-2"
+                  >
+                    <Crosshair size={15} />
+                    {editLocationLoading ? "Locating..." : "Use My Location"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearEditPin}
+                    disabled={!form.coordinates}
+                    className="btn-ghost gap-2"
+                  >
+                    <X size={15} />
+                    Clear Pin
+                  </button>
+                </div>
+              </div>
+
+              {editMapError ? (
+                <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                  {editMapError}
+                </div>
+              ) : (
+                <div className="relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-zinc-950/40">
+                  {editMapLoading ? (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center gap-2 bg-zinc-950/80 text-sm text-cyan-300">
+                      <Loader2 size={18} className="animate-spin" />
+                      Loading map...
+                    </div>
+                  ) : null}
+                  <div ref={editMapRef} className="h-[260px] w-full bg-gradient-to-br from-slate-900 to-zinc-950" />
+                </div>
+              )}
+
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-950/40 px-4 py-3 text-sm text-zinc-300">
+                {form.coordinates ? (
+                  <span>
+                    Pin saved at {form.coordinates.latitude.toFixed(5)}, {form.coordinates.longitude.toFixed(5)}
+                  </span>
+                ) : (
+                  <span>No exact pin selected yet.</span>
+                )}
+              </div>
             </div>
 
             <div>

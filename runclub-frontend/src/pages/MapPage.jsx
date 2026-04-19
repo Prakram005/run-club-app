@@ -65,6 +65,7 @@ export default function MapPage() {
   const geocoderRef = useRef(null);
   const infoWindowRef = useRef(null);
   const markersRef = useRef([]);
+  const markerIndexRef = useRef(new Map());
   const userLocationMarkerRef = useRef(null);
   const focusedEventRef = useRef(null);
   const heatmapRef = useRef(null);
@@ -118,6 +119,24 @@ export default function MapPage() {
       });
   }, []);
 
+  const openEventMarker = useCallback((event, marker) => {
+    if (soundEnabled && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
+
+    setSelected(event);
+    infoWindowRef.current?.setContent(
+      `<div style="background:#0f0f1e;color:#f4f4f5;padding:12px 16px;border-radius:12px;min-width:220px;border:1px solid #06b6d4;">
+        <div style="font-weight:700;font-size:14px;margin-bottom:6px;color:#06b6d4;">${escapeHtml(event.title)}</div>
+        <div style="font-size:12px;color:#a1a1aa;margin-bottom:4px;">${escapeHtml(event.location || "Pinned meetup spot")}</div>
+        <div style="font-size:11px;color:#71717a;">${format(new Date(event.date), "MMM d h:mm a")}</div>
+        <div style="font-size:11px;color:#06b6d4;margin-top:4px;">${event.participants?.length || 0} runners</div>
+      </div>`
+    );
+    infoWindowRef.current?.open(mapInstance.current, marker);
+  }, [soundEnabled]);
+
   const renderMarker = useCallback((event, position) => {
     const marker = new window.google.maps.Marker({
       map: mapInstance.current,
@@ -134,40 +153,19 @@ export default function MapPage() {
     });
 
     marker.addListener("click", () => {
-      if (soundEnabled && audioRef.current) {
-        audioRef.current.currentTime = 0;
-        audioRef.current.play().catch(() => {});
-      }
-      setSelected(event);
-      infoWindowRef.current?.setContent(
-        `<div style="background:#0f0f1e;color:#f4f4f5;padding:12px 16px;border-radius:12px;min-width:220px;border:1px solid #06b6d4;">
-          <div style="font-weight:700;font-size:14px;margin-bottom:6px;color:#06b6d4;">${escapeHtml(event.title)}</div>
-          <div style="font-size:12px;color:#a1a1aa;margin-bottom:4px;">${escapeHtml(event.location || "Pinned meetup spot")}</div>
-          <div style="font-size:11px;color:#71717a;">${format(new Date(event.date), "MMM d h:mm a")}</div>
-          <div style="font-size:11px;color:#06b6d4;margin-top:4px;">${event.participants?.length || 0} runners</div>
-        </div>`
-      );
-      infoWindowRef.current?.open(mapInstance.current, marker);
+      openEventMarker(event, marker);
     });
 
     if (focusedEventRef.current && focusedEventRef.current === event._id) {
       mapInstance.current?.setCenter(position);
       mapInstance.current?.setZoom(15);
-      setSelected(event);
-      infoWindowRef.current?.setContent(
-        `<div style="background:#0f0f1e;color:#f4f4f5;padding:12px 16px;border-radius:12px;min-width:220px;border:1px solid #06b6d4;">
-          <div style="font-weight:700;font-size:14px;margin-bottom:6px;color:#06b6d4;">${escapeHtml(event.title)}</div>
-          <div style="font-size:12px;color:#a1a1aa;margin-bottom:4px;">${escapeHtml(event.location || "Pinned meetup spot")}</div>
-          <div style="font-size:11px;color:#71717a;">${format(new Date(event.date), "MMM d h:mm a")}</div>
-          <div style="font-size:11px;color:#06b6d4;margin-top:4px;">${event.participants?.length || 0} runners</div>
-        </div>`
-      );
-      infoWindowRef.current?.open(mapInstance.current, marker);
+      openEventMarker(event, marker);
       focusedEventRef.current = null;
     }
 
+    markerIndexRef.current.set(event._id, marker);
     markersRef.current.push(marker);
-  }, [soundEnabled]);
+  }, [openEventMarker]);
 
   const placeMarkers = useCallback(() => {
     if (!mapInstance.current || !geocoderRef.current || !window.google?.maps) {
@@ -176,6 +174,7 @@ export default function MapPage() {
 
     markersRef.current.forEach((marker) => marker.setMap(null));
     markersRef.current = [];
+    markerIndexRef.current = new Map();
 
     events
       .filter((event) => new Date(event.date) >= new Date() && (event.location || getEventCoordinates(event)))
@@ -202,6 +201,31 @@ export default function MapPage() {
       placeMarkers();
     }
   }, [loading, mapsError, placeMarkers]);
+
+  const focusEvent = useCallback((event) => {
+    setSelected(event);
+
+    const marker = markerIndexRef.current.get(event._id);
+
+    if (marker) {
+      const position = marker.getPosition();
+
+      if (position) {
+        mapInstance.current?.setCenter(position);
+        mapInstance.current?.setZoom(15);
+      }
+
+      openEventMarker(event, marker);
+      return;
+    }
+
+    const savedCoordinates = getEventCoordinates(event);
+
+    if (savedCoordinates) {
+      mapInstance.current?.setCenter(savedCoordinates);
+      mapInstance.current?.setZoom(15);
+    }
+  }, [openEventMarker]);
 
   // Heatmap effect
   useEffect(() => {
@@ -497,7 +521,7 @@ VITE_GOOGLE_MAPS_KEY=your_key_here`}
             {upcomingWithLocation.map((event, index) => (
               <motion.button
                 key={event._id}
-                onClick={() => setSelected(event)}
+                onClick={() => focusEvent(event)}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}

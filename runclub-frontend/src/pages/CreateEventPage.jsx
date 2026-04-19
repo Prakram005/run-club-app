@@ -408,37 +408,37 @@ export default function CreateEventPage() {
             <div className="grid gap-6 md:grid-cols-2">
               <div>
                 <label className="text-sm font-bold uppercase tracking-wider text-red-400 mb-3 block">
-                  ⛰️ Difficulty Level
+                  Difficulty Level
                 </label>
                 <select
                   className="input w-full px-4 py-3 rounded-xl border-2 border-red-600/40 bg-black/60 text-white transition focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/30 shadow-red-glow-sm"
                   value={form.difficulty}
                   onChange={(event) => update("difficulty", event.target.value)}
                 >
-                  <option value="beginner">🟢 Beginner</option>
-                  <option value="intermediate">🟡 Intermediate</option>
-                  <option value="advanced">🔴 Advanced</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
                 </select>
               </div>
               <div>
                 <label className="text-sm font-bold uppercase tracking-wider text-red-400 mb-3 block">
-                  🏞️ Terrain
+                  Terrain
                 </label>
                 <select
                   className="input w-full px-4 py-3 rounded-xl border-2 border-red-600/40 bg-black/60 text-white transition focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/30 shadow-red-glow-sm"
                   value={form.terrain}
                   onChange={(event) => update("terrain", event.target.value)}
                 >
-                  <option value="road">🛣️ Road</option>
-                  <option value="trail">🥾 Trail</option>
-                  <option value="mixed">🔀 Mixed</option>
+                  <option value="road">Road</option>
+                  <option value="trail">Trail</option>
+                  <option value="mixed">Mixed</option>
                 </select>
               </div>
             </div>
             <div className="grid gap-6 md:grid-cols-2">
               <div>
                 <label className="text-sm font-bold uppercase tracking-wider text-red-400 mb-3 block">
-                  ⏱️ Expected Pace (e.g., 8:00/km)
+                  Expected Pace
                 </label>
                 <input
                   type="text"
@@ -450,7 +450,7 @@ export default function CreateEventPage() {
               </div>
               <div>
                 <label className="text-sm font-bold uppercase tracking-wider text-red-400 mb-3 block">
-                  📏 Distance (km)
+                  Distance (km)
                 </label>
                 <input
                   type="number"
@@ -551,7 +551,7 @@ export default function CreateEventPage() {
             </div>
             <div>
               <label className="text-sm font-bold uppercase tracking-wider text-red-400 mb-3 block">
-                🖼️ Event Cover Image (Optional)
+                Event Cover Image (Optional)
               </label>
               <div className="relative">
                 {form.image ? (
@@ -611,3 +611,4 @@ export default function CreateEventPage() {
     </div>
   );
 }
+
