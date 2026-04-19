@@ -9,20 +9,45 @@ const eventSchema = new mongoose.Schema({
   },
   date: String,
   description: String,
+  difficulty: {
+    type: String,
+    enum: ['beginner', 'intermediate', 'advanced'],
+    default: 'intermediate'
+  },
+  terrain: {
+    type: String,
+    enum: ['road', 'trail', 'mixed'],
+    default: 'road'
+  },
+  pace: String,
+  distance: Number,
+  tags: [String],
+  image: String,
+  routeUrl: String,
+  status: {
+    type: String,
+    enum: ['upcoming', 'ongoing', 'completed'],
+    default: 'upcoming'
+  },
   maxParticipants: {
     type: Number,
     default: 20
   },
-
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true
   },
-
   participants: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
+  }],
+  checkedInUsers: [{
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    },
+    timestamp: Date
   }]
 });
 

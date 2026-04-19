@@ -10,6 +10,7 @@ require("dotenv").config();
 
 const User = require("./models/User");
 const Event = require("./models/event");
+const Notification = require("./models/Notification");
 const auth = require("./middleware/auth");
 
 const chatMessageSchema = new mongoose.Schema(
@@ -251,6 +252,11 @@ app.post("/create-event", auth, async (req, res) => {
     const date = req.body.date;
     const maxParticipants = Number.parseInt(req.body.maxParticipants, 10) || 20;
     const coordinates = parseCoordinates(req.body.coordinates);
+    const difficulty = req.body.difficulty || "intermediate";
+    const terrain = req.body.terrain || "road";
+    const pace = req.body.pace?.trim();
+    const distance = req.body.distance ? Number.parseFloat(req.body.distance) : undefined;
+    const tags = Array.isArray(req.body.tags) ? req.body.tags : [];
 
     if (!title || !date) {
       return res.status(400).json({ message: "Title and date are required" });
@@ -263,6 +269,11 @@ app.post("/create-event", auth, async (req, res) => {
       date,
       description,
       maxParticipants,
+      difficulty,
+      terrain,
+      pace,
+      distance,
+      tags,
       createdBy: req.user.id,
       participants: []
     });
@@ -276,14 +287,29 @@ app.post("/create-event", auth, async (req, res) => {
 
 app.post("/join-event/:id", auth, async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id);
+    const event = await Event.findById(req.params.id).populate("createdBy", "name");
 
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (!event.participants.map((entry) => String(entry)).includes(String(req.user.id))) {
+    const isNewParticipant = !event.participants.map((entry) => String(entry)).includes(String(req.user.id));
+    
+    if (isNewParticipant) {
       event.participants.push(req.user.id);
+
+      // Create notification for event creator
+      if (String(event.createdBy._id) !== String(req.user.id)) {
+        const notification = new Notification({
+          userId: event.createdBy._id,
+          eventId: event._id,
+          type: "participant_joined",
+          title: `New participant for "${event.title}"`,
+          message: `Someone joined your event!`,
+          relatedUserId: req.user.id
+        });
+        await notification.save();
+      }
     }
 
     await event.save();
@@ -460,6 +486,64 @@ app.get("/leaderboard", async (req, res) => {
     );
   } catch (error) {
     return res.status(500).json({ message: error.message || "Failed to fetch leaderboard" });
+  }
+});
+
+app.get("/users/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("name email");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json({ data: user });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to fetch user" });
+  }
+});
+
+app.get("/notifications", auth, async (req, res) => {
+  try {
+    const notifications = await Notification.find({ userId: req.user.id })
+      .sort({ createdAt: -1 })
+      .populate("relatedUserId", "name")
+      .limit(50);
+
+    return res.json(notifications);
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to fetch notifications" });
+  }
+});
+
+app.post("/notifications/:id/read", auth, async (req, res) => {
+  try {
+    const notification = await Notification.findById(req.params.id);
+
+    if (!notification) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+
+    if (String(notification.userId) !== String(req.user.id)) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    notification.read = true;
+    await notification.save();
+
+    return res.json(notification);
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to update notification" });
+  }
+});
+
+app.post("/notifications/read-all", auth, async (req, res) => {
+  try {
+    await Notification.updateMany({ userId: req.user.id }, { read: true });
+
+    return res.json({ message: "All notifications marked as read" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to update notifications" });
   }
 });
 

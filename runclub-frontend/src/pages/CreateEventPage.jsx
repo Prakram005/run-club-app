@@ -37,7 +37,13 @@ export default function CreateEventPage() {
     location: "",
     description: "",
     maxParticipants: 20,
-    coordinates: null
+    coordinates: null,
+    difficulty: "intermediate",
+    terrain: "road",
+    pace: "",
+    distance: "",
+    tags: [],
+    image: null
   });
 
   const update = (key, value) => {
@@ -240,6 +246,34 @@ export default function CreateEventPage() {
     }));
   };
 
+  const handleImageUpload = (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setForm((current) => ({
+        ...current,
+        image: e.target?.result
+      }));
+      toast.success("Image uploaded successfully.");
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -257,7 +291,13 @@ export default function CreateEventPage() {
         location: form.location.trim(),
         description: form.description.trim(),
         maxParticipants: Number(form.maxParticipants) || 20,
-        coordinates: form.coordinates || undefined
+        coordinates: form.coordinates || undefined,
+        difficulty: form.difficulty,
+        terrain: form.terrain,
+        pace: form.pace || undefined,
+        distance: form.distance ? Number(form.distance) : undefined,
+        tags: form.tags,
+        image: form.image || undefined
       });
 
       toast.success("Event created.");
@@ -368,6 +408,68 @@ export default function CreateEventPage() {
               </div>
             </div>
 
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <label className="text-sm font-bold uppercase tracking-wider text-indigo-400 mb-3 block">
+                  ⛰️ Difficulty Level
+                </label>
+                <select
+                  className="input w-full px-4 py-3 rounded-xl border-2 border-indigo-500/30 bg-indigo-500/5 text-white transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                  value={form.difficulty}
+                  onChange={(event) => update("difficulty", event.target.value)}
+                >
+                  <option value="beginner">🟢 Beginner</option>
+                  <option value="intermediate">🟡 Intermediate</option>
+                  <option value="advanced">🔴 Advanced</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-bold uppercase tracking-wider text-green-400 mb-3 block">
+                  🏞️ Terrain
+                </label>
+                <select
+                  className="input w-full px-4 py-3 rounded-xl border-2 border-green-500/30 bg-green-500/5 text-white transition focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/30"
+                  value={form.terrain}
+                  onChange={(event) => update("terrain", event.target.value)}
+                >
+                  <option value="road">🛣️ Road</option>
+                  <option value="trail">🥾 Trail</option>
+                  <option value="mixed">🔀 Mixed</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <label className="text-sm font-bold uppercase tracking-wider text-lime-400 mb-3 block">
+                  ⏱️ Expected Pace (e.g., 8:00/km)
+                </label>
+                <input
+                  type="text"
+                  className="input w-full px-4 py-3 rounded-xl border-2 border-lime-500/30 bg-lime-500/5 text-white placeholder-lime-600 transition focus:border-lime-500 focus:outline-none focus:ring-2 focus:ring-lime-500/30"
+                  placeholder="e.g., 8:00/km or 5 min/mile"
+                  value={form.pace}
+                  onChange={(event) => update("pace", event.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-bold uppercase tracking-wider text-yellow-400 mb-3 block">
+                  📏 Distance (km)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  className="input w-full px-4 py-3 rounded-xl border-2 border-yellow-500/30 bg-yellow-500/5 text-white placeholder-yellow-600 transition focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/30"
+                  placeholder="e.g., 5"
+                  value={form.distance}
+                  onChange={(event) => update("distance", event.target.value)}
+                />
+              </div>
+            </div>
+
             <div>
               <label className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-blue-400 mb-3">
                 <MapPin size={16} />
@@ -454,6 +556,46 @@ export default function CreateEventPage() {
                   </span>
                 ) : (
                   <span>No pin selected yet.</span>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-bold uppercase tracking-wider text-rose-400 mb-3 block">
+                🖼️ Event Cover Image (Optional)
+              </label>
+              <div className="relative">
+                {form.image ? (
+                  <div className="space-y-3">
+                    <div className="rounded-xl overflow-hidden border-2 border-rose-500/30 max-h-48">
+                      <img
+                        src={form.image}
+                        alt="Event cover"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => update("image", null)}
+                      className="btn-ghost w-full gap-2"
+                    >
+                      <X size={15} />
+                      Remove Image
+                    </button>
+                  </div>
+                ) : (
+                  <label className="block cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="sr-only"
+                    />
+                    <div className="border-2 border-dashed border-rose-500/30 rounded-xl p-6 text-center hover:border-rose-500/50 transition">
+                      <p className="text-sm text-rose-400 font-semibold">Click to upload or drag and drop</p>
+                      <p className="text-xs text-zinc-400 mt-1">PNG, JPG, GIF up to 5MB</p>
+                    </div>
+                  </label>
                 )}
               </div>
             </div>

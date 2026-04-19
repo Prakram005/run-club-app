@@ -11,6 +11,7 @@ import EventDetailPage from "./pages/EventDetailPage";
 import EventsPage from "./pages/EventsPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import MapPage from "./pages/MapPage";
+import UserProfilePage from "./pages/UserProfilePage";
 
 function ProtectedLayout() {
   const { user, loading } = useAuth();
@@ -66,6 +67,7 @@ export default function App() {
         <Route index element={<DashboardPage />} />
         <Route path="events" element={<EventsPage />} />
         <Route path="events/:id" element={<EventDetailPage />} />
+        <Route path="user/:userId" element={<UserProfilePage />} />
         <Route path="create" element={<CreateEventPage />} />
         <Route path="map" element={<MapPage />} />
         <Route path="leaderboard" element={<LeaderboardPage />} />

@@ -2,6 +2,7 @@ import { Home, CalendarDays, Map, PlusSquare, Trophy, LogOut } from "lucide-reac
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { LiveNotifications } from "../ui";
+import NotificationsDropdown from "../ui/NotificationsDropdown";
 
 const links = [
   { to: "/", label: "Dashboard", icon: Home, end: true },
@@ -52,10 +53,13 @@ export default function Layout() {
               <p className="text-xs uppercase tracking-wider text-zinc-500">Signed in as</p>
               <p className="mt-1 font-semibold text-zinc-100">{user?.name || "Runner"}</p>
               <p className="truncate text-sm text-zinc-400">{user?.email}</p>
-              <button onClick={logout} className="btn-ghost mt-4 w-full gap-2">
-                <LogOut size={16} />
-                Logout
-              </button>
+              <div className="flex gap-2 mt-4">
+                <NotificationsDropdown />
+                <button onClick={logout} className="btn-ghost flex-1 gap-2">
+                  <LogOut size={16} />
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
         </aside>

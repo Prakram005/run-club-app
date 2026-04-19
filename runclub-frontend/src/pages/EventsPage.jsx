@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Plus, Search, SortAsc, SortDesc, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import EventCard from "../components/events/EventCard";
+import EventFilter from "../components/events/EventFilter";
 import { EmptyState, EventCardSkeleton } from "../components/ui";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../utils/api";
@@ -24,6 +25,13 @@ export default function EventsPage() {
   const [tab, setTab] = useState("my");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("asc");
+  const [filters, setFilters] = useState({
+    difficulty: [],
+    terrain: [],
+    minDistance: "",
+    maxDistance: "",
+    pace: ""
+  });
 
   const load = () => {
     setLoading(true);
@@ -60,13 +68,30 @@ export default function EventsPage() {
       );
     }
 
+    // Apply advanced filters
+    if (filters.difficulty.length > 0) {
+      list = list.filter((event) => filters.difficulty.includes(event.difficulty));
+    }
+
+    if (filters.terrain.length > 0) {
+      list = list.filter((event) => filters.terrain.includes(event.terrain));
+    }
+
+    if (filters.minDistance) {
+      list = list.filter((event) => (event.distance || 0) >= Number(filters.minDistance));
+    }
+
+    if (filters.maxDistance) {
+      list = list.filter((event) => (event.distance || 0) <= Number(filters.maxDistance));
+    }
+
     list.sort((left, right) => {
       const diff = new Date(left.date) - new Date(right.date);
       return sort === "asc" ? diff : -diff;
     });
 
     return list;
-  }, [events, search, sort, tab, user]);
+  }, [events, search, sort, tab, user, filters]);
 
   const myId = String(user?.id || "");
   const myCount = events.filter((event) => String(event.createdBy) === myId).length;
@@ -103,6 +128,17 @@ export default function EventsPage() {
           </button>
         ))}
       </div>
+
+      <EventFilter 
+        onFilter={setFilters} 
+        onReset={() => setFilters({
+          difficulty: [],
+          terrain: [],
+          minDistance: "",
+          maxDistance: "",
+          pace: ""
+        })}
+      />
 
       <div className="flex flex-wrap gap-3">
         <div className="relative min-w-[220px] flex-1">

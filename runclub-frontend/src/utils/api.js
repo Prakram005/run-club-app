@@ -29,5 +29,8 @@ export const deleteEvent = (id) => client.delete(`/events/${id}`);
 export const getChatMessages = (eventId) => client.get(`/chat/${eventId}`);
 export const sendChatMessage = (eventId, payload) => client.post(`/chat/${eventId}`, payload);
 export const getLeaderboard = () => client.get("/leaderboard");
+export const getNotifications = () => client.get("/notifications");
+export const markNotificationAsRead = (id) => client.post(`/notifications/${id}/read`);
+export const markAllNotificationsAsRead = () => client.post("/notifications/read-all");
 
 export { API_URL };

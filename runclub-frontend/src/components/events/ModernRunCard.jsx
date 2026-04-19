@@ -36,11 +36,22 @@ export default function ModernRunCard({ event, isJoined, onJoin, onLeave }) {
       {/* Glassmorphism background */}
       <div className={`absolute inset-0 bg-gradient-to-br ${colorGradient} opacity-10`} />
       
-      <div className="relative border-2 border-white/10 rounded-2xl bg-white/5 backdrop-blur-xl p-6 hover:border-white/20 transition-colors group">
+      <div className="relative border-2 border-white/10 rounded-2xl bg-white/5 backdrop-blur-xl overflow-hidden hover:border-white/20 transition-colors group flex flex-col">
+        {/* Event Image */}
+        {event.image && (
+          <div className="h-36 w-full overflow-hidden bg-gradient-to-br from-zinc-800 to-zinc-900">
+            <img
+              src={event.image}
+              alt={event.title}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            />
+          </div>
+        )}
+
         {/* Glow effect on hover */}
         <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-        <div className="relative z-10">
+        <div className="relative z-10 p-6 flex flex-col flex-1">
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
@@ -62,12 +73,44 @@ export default function ModernRunCard({ event, isJoined, onJoin, onLeave }) {
             )}
           </div>
 
+          {/* Difficulty & Terrain badges */}
+          {(event.difficulty || event.terrain || event.distance || event.pace) && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {event.difficulty && (
+                <span className="text-xs px-2 py-1 rounded-full bg-indigo-500/20 text-indigo-300">
+                  {event.difficulty === "beginner" && "🟢"}
+                  {event.difficulty === "intermediate" && "🟡"}
+                  {event.difficulty === "advanced" && "🔴"}
+                  {" " + event.difficulty.charAt(0).toUpperCase() + event.difficulty.slice(1)}
+                </span>
+              )}
+              {event.terrain && (
+                <span className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-300">
+                  {event.terrain === "road" && "🛣️"}
+                  {event.terrain === "trail" && "🥾"}
+                  {event.terrain === "mixed" && "🔀"}
+                  {" " + event.terrain}
+                </span>
+              )}
+              {event.distance && (
+                <span className="text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-300">
+                  📏 {event.distance}km
+                </span>
+              )}
+              {event.pace && (
+                <span className="text-xs px-2 py-1 rounded-full bg-lime-500/20 text-lime-300">
+                  ⏱️ {event.pace}
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Stats grid */}
           <div className="grid grid-cols-3 gap-3 mb-4">
             {/* Distance */}
             <div className="rounded-lg bg-white/5 p-3 border border-white/10">
               <p className="text-xs text-zinc-400 font-semibold uppercase tracking-wider mb-1">Distance</p>
-              <p className="text-lg font-bold text-cyan-400">{distance.toFixed(1)} km</p>
+              <p className="text-lg font-bold text-cyan-400">{event.distance || distance.toFixed(1)} km</p>
             </div>
 
             {/* Time */}
