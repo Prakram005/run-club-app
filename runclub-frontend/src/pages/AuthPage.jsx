@@ -82,7 +82,7 @@ export default function AuthPage() {
           </h1>
 
           <p className="mt-6 max-w-xl text-base font-medium leading-relaxed text-zinc-300">
-            Create events, track your runners, and keep the entire club moving with a smoother red-black experience.
+            Create events, track your runners, and keep the entire club moving with a smoother experience.
           </p>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-3">

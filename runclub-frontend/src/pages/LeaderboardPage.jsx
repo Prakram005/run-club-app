@@ -90,7 +90,7 @@ export default function LeaderboardPage() {
           <GlowingText color="red">Club rankings</GlowingText>
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-          Track the most active runners and top organizers in one sharp red-black leaderboard view.
+          Track the most active runners and top organizers in leaderboard view.
         </p>
       </motion.section>
 
