@@ -30,7 +30,7 @@ export default function ActivityFeed({ eventId }) {
 
   if (activities.length === 0) {
     return (
-      <div className="rounded-lg bg-zinc-900/30 p-6 text-center text-zinc-500">
+      <div className="rounded-2xl border border-white/10 bg-black/35 p-6 text-center text-zinc-500">
         <p className="text-sm">No activity yet. Be the first to join!</p>
       </div>
     );
@@ -46,10 +46,10 @@ export default function ActivityFeed({ eventId }) {
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="flex items-start gap-3 rounded-lg bg-zinc-900/30 p-3"
+            className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/35 p-3"
           >
-            <div className="mt-1 rounded-full bg-brand-400/10 p-2">
-              <Icon size={14} className="text-brand-400" />
+            <div className="mt-1 rounded-full bg-red-500/10 p-2">
+              <Icon size={14} className="text-red-300" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-zinc-100">

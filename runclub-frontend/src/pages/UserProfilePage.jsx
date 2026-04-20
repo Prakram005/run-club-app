@@ -1,17 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Mail, Calendar, Trophy, Zap, MapPin } from "lucide-react";
+import { ArrowLeft, Calendar, Flame, Trophy, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../utils/api";
 import { GlowingText } from "../components/ui/EngagingUI";
+import { RouteSkeleton } from "../components/ui";
 import ModernRunCard from "../components/events/ModernRunCard";
 
 const badgeDefinitions = [
-  { id: "first-run", label: "First Run", threshold: 1, icon: "🏃", color: "#06b6d4" },
-  { id: "crew-builder", label: "Crew Builder", threshold: 3, icon: "👥", color: "#8b5cf6" },
-  { id: "pacer", label: "Pacer", threshold: 10, icon: "⏱️", color: "#f59e0b" },
-  { id: "joiner", label: "Joiner", threshold: 5, icon: "✅", color: "#10b981" }
+  { id: "first-run", label: "First Run", threshold: 1 },
+  { id: "crew-builder", label: "Crew Builder", threshold: 3 },
+  { id: "pacer", label: "Pacer", threshold: 10 },
+  { id: "joiner", label: "Joiner", threshold: 5 }
 ];
 
 export default function UserProfilePage() {
@@ -25,7 +26,7 @@ export default function UserProfilePage() {
   useEffect(() => {
     Promise.all([
       api.getEvents(),
-      fetch(`${api.API_URL}/users/${userId}`).then(r => r.json()).catch(() => null)
+      fetch(`${api.API_URL}/users/${userId}`).then((response) => response.json()).catch(() => null)
     ])
       .then(([eventsRes, userRes]) => {
         setAllEvents(eventsRes.data || []);
@@ -37,17 +38,15 @@ export default function UserProfilePage() {
   }, [userId]);
 
   const { createdEvents, joinedEvents, stats, badges } = useMemo(() => {
-    const created = allEvents.filter((e) => String(e.createdBy) === userId);
-    const joined = allEvents.filter((e) =>
-      !created.includes(e) &&
-      e.participants?.some((p) => String(typeof p === "object" ? p._id : p) === userId)
+    const created = allEvents.filter((event) => String(event.createdBy) === userId);
+    const joined = allEvents.filter(
+      (event) =>
+        !created.includes(event) &&
+        event.participants?.some((participant) => String(typeof participant === "object" ? participant._id : participant) === userId)
     );
 
-    const upcomingCreated = created.filter((e) => new Date(e.date) >= new Date());
-    const completedCreated = created.filter((e) => new Date(e.date) < new Date());
-
-    const upcomingJoined = joined.filter((e) => new Date(e.date) >= new Date());
-    const completedJoined = joined.filter((e) => new Date(e.date) < new Date());
+    const upcomingCreated = created.filter((event) => new Date(event.date) >= new Date());
+    const upcomingJoined = joined.filter((event) => new Date(event.date) >= new Date());
 
     return {
       createdEvents: created,
@@ -56,189 +55,165 @@ export default function UserProfilePage() {
         totalCreated: created.length,
         totalJoined: joined.length,
         upcomingCreated: upcomingCreated.length,
-        completedCreated: completedCreated.length,
         upcomingJoined: upcomingJoined.length,
-        completedJoined: completedJoined.length,
-        totalParticipants: created.reduce((sum, e) => sum + (e.participants?.length || 0), 0)
+        totalParticipants: created.reduce((sum, event) => sum + (event.participants?.length || 0), 0)
       },
       badges: badgeDefinitions.filter((badge) => {
-        const count = badge.id === "pacer" ? created.length : created.length;
+        const count = badge.id === "joiner" ? joined.length : created.length;
         return count >= badge.threshold;
       })
     };
   }, [allEvents, userId]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-zinc-400">Loading...</p>
-      </div>
-    );
+    return <RouteSkeleton title="Loading profile" description="Pulling runner stats, created events, and upcoming runs." />;
   }
 
   const displayName = userData?.name || "Runner";
   const isOwnProfile = String(currentUser?.id) === userId;
+  const totalRuns = stats.totalCreated + stats.totalJoined;
+  const upcomingRuns = stats.upcomingCreated + stats.upcomingJoined;
 
   return (
     <div className="space-y-8">
-      {/* Back Button */}
       <motion.button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-sm font-bold text-cyan-400 hover:text-cyan-300 transition"
-        whileHover={{ gap: "12px" }}
-        whileTap={{ scale: 0.95 }}
+        className="flex items-center gap-2 text-sm font-bold text-red-300 transition hover:text-red-200"
+        whileHover={{ x: -4 }}
+        whileTap={{ scale: 0.97 }}
       >
         <ArrowLeft size={18} />
         Back
       </motion.button>
 
-      {/* Profile Header */}
       <motion.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 border-purple-500/30 p-8 md:p-12"
+        className="card-elevated overflow-hidden border border-red-500/20 p-8 md:p-10"
       >
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,26,26,0.14),transparent_35%)]" />
+        <div className="relative flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.35em] text-purple-400">
-              👤 Profile
-            </p>
-            <h1 className="mt-4 font-display text-5xl font-bold text-white">
-              {displayName}
-            </h1>
-            <div className="mt-4 flex flex-wrap gap-4 text-sm text-zinc-400">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.34em] text-red-300">Profile</p>
+            <h1 className="mt-4 font-display text-5xl font-bold text-white">{displayName}</h1>
+            <div className="mt-5 flex flex-wrap gap-4 text-sm text-zinc-400">
               <div className="flex items-center gap-2">
-                <Trophy size={16} className="text-amber-400" />
-                {stats.totalCreated + stats.totalJoined} Total Runs
+                <Trophy size={16} className="text-red-300" />
+                {totalRuns} total runs
               </div>
               <div className="flex items-center gap-2">
-                <Zap size={16} className="text-yellow-400" />
-                {Math.max(0, stats.totalCreated - 1)} Events Created
+                <Flame size={16} className="text-red-300" />
+                {stats.totalCreated} organized
               </div>
               <div className="flex items-center gap-2">
-                <Calendar size={16} className="text-cyan-400" />
-                {stats.upcomingCreated + stats.upcomingJoined} Upcoming
+                <Calendar size={16} className="text-red-300" />
+                {upcomingRuns} upcoming
               </div>
             </div>
           </div>
 
-          {isOwnProfile && (
+          {isOwnProfile ? (
             <motion.button
               onClick={() => navigate("/profile/edit")}
               className="btn-primary px-6 py-3"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               Edit Profile
             </motion.button>
-          )}
+          ) : null}
         </div>
       </motion.section>
 
-      {/* Badges Section */}
-      {badges.length > 0 && (
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <h2 className="mb-4 font-display text-2xl font-bold">
-            <GlowingText color="yellow">✨ Badges</GlowingText>
+      {badges.length > 0 ? (
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <h2 className="mb-4 font-display text-2xl font-bold text-white">
+            <GlowingText color="gold">Unlocked badges</GlowingText>
           </h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {badges.map((badge) => (
               <motion.div
                 key={badge.id}
-                className="card p-6 border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 text-center"
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.03, y: -4 }}
+                className="card p-6 border border-red-400/20 bg-red-500/10 text-center"
               >
-                <div className="text-4xl mb-2">{badge.icon}</div>
-                <p className="font-bold text-yellow-300">{badge.label}</p>
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-red-400/20 bg-black/45 text-lg font-bold text-red-200">
+                  {badge.threshold}
+                </div>
+                <p className="mt-4 font-bold text-white">{badge.label}</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.24em] text-zinc-500">milestone badge</p>
               </motion.div>
             ))}
           </div>
         </motion.section>
-      )}
+      ) : null}
 
-      {/* Stats Grid */}
       <motion.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
         className="grid gap-4 md:grid-cols-3"
       >
-        <div className="card p-6 border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-blue-500/10">
-          <p className="text-xs font-bold uppercase text-cyan-400">Created Events</p>
-          <p className="mt-2 font-display text-4xl font-bold text-white">{stats.totalCreated}</p>
-          <p className="mt-1 text-sm text-zinc-400">{stats.upcomingCreated} upcoming</p>
+        <div className="card p-6 border border-red-400/20 bg-red-500/10">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-red-300">Created Events</p>
+          <p className="mt-3 font-display text-4xl font-bold text-white">{stats.totalCreated}</p>
+          <p className="mt-2 text-sm text-zinc-400">{stats.upcomingCreated} upcoming</p>
         </div>
 
-        <div className="card p-6 border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-pink-500/10">
-          <p className="text-xs font-bold uppercase text-purple-400">Joined Events</p>
-          <p className="mt-2 font-display text-4xl font-bold text-white">{stats.totalJoined}</p>
-          <p className="mt-1 text-sm text-zinc-400">{stats.upcomingJoined} upcoming</p>
+        <div className="card p-6 border border-red-400/20 bg-black/45">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-red-300">Joined Events</p>
+          <p className="mt-3 font-display text-4xl font-bold text-white">{stats.totalJoined}</p>
+          <p className="mt-2 text-sm text-zinc-400">{stats.upcomingJoined} upcoming</p>
         </div>
 
-        <div className="card p-6 border-2 border-green-500/30 bg-gradient-to-br from-green-500/10 to-emerald-500/10">
-          <p className="text-xs font-bold uppercase text-green-400">Total Runners</p>
-          <p className="mt-2 font-display text-4xl font-bold text-white">{stats.totalParticipants}</p>
-          <p className="mt-1 text-sm text-zinc-400">Across all events</p>
+        <div className="card p-6 border border-red-400/20 bg-black/45">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-red-300">Total Runners</p>
+          <p className="mt-3 font-display text-4xl font-bold text-white">{stats.totalParticipants}</p>
+          <p className="mt-2 text-sm text-zinc-400">Across organized events</p>
         </div>
       </motion.section>
 
-      {/* Created Events */}
-      {createdEvents.length > 0 && (
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <h2 className="mb-4 font-display text-2xl font-bold">
-            <GlowingText color="cyan">📍 Created Events</GlowingText>
+      {createdEvents.length > 0 ? (
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <h2 className="mb-4 font-display text-2xl font-bold text-white">
+            <GlowingText color="red">Created runs</GlowingText>
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
             {createdEvents
-              .sort((a, b) => new Date(b.date) - new Date(a.date))
+              .slice()
+              .sort((left, right) => new Date(right.date) - new Date(left.date))
               .slice(0, 6)
               .map((event) => (
                 <ModernRunCard key={event._id} event={event} />
               ))}
           </div>
-          {createdEvents.length > 6 && (
+          {createdEvents.length > 6 ? (
             <motion.div className="mt-6 text-center">
-              <Link
-                to={`/user/${userId}/events?type=created`}
-                className="btn-ghost gap-2"
-              >
+              <Link to={`/user/${userId}/events?type=created`} className="btn-ghost gap-2">
                 View All {createdEvents.length} Events
               </Link>
             </motion.div>
-          )}
+          ) : null}
         </motion.section>
-      )}
+      ) : null}
 
-      {/* Upcoming Events */}
-      {createdEvents.filter((e) => new Date(e.date) >= new Date()).length > 0 && (
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <h2 className="mb-4 font-display text-2xl font-bold">
-            <GlowingText color="purple">⏰ Upcoming</GlowingText>
+      {upcomingRuns > 0 ? (
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+          <h2 className="mb-4 font-display text-2xl font-bold text-white">
+            <GlowingText color="soft">Upcoming schedule</GlowingText>
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
             {createdEvents
               .concat(joinedEvents)
-              .filter((e) => new Date(e.date) >= new Date())
-              .sort((a, b) => new Date(a.date) - new Date(b.date))
+              .filter((event) => new Date(event.date) >= new Date())
+              .sort((left, right) => new Date(left.date) - new Date(right.date))
               .slice(0, 6)
               .map((event) => (
                 <ModernRunCard key={event._id} event={event} />
               ))}
           </div>
         </motion.section>
-      )}
+      ) : null}
     </div>
   );
 }

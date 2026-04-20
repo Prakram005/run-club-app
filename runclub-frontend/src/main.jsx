@@ -13,7 +13,32 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <AuthProvider>
         <SocketProvider>
           <App />
-          <Toaster position="top-right" />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 2800,
+              style: {
+                background: "rgba(9, 9, 9, 0.94)",
+                color: "#ffffff",
+                border: "1px solid rgba(255, 77, 77, 0.28)",
+                boxShadow: "0 18px 40px rgba(0,0,0,0.35), 0 0 24px rgba(255,26,26,0.12)",
+                backdropFilter: "blur(14px)",
+                borderRadius: "18px"
+              },
+              success: {
+                iconTheme: {
+                  primary: "#ff4d4f",
+                  secondary: "#050505"
+                }
+              },
+              error: {
+                iconTheme: {
+                  primary: "#ff6b6b",
+                  secondary: "#050505"
+                }
+              }
+            }}
+          />
         </SocketProvider>
       </AuthProvider>
     </BrowserRouter>

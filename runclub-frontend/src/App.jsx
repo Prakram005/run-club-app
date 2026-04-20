@@ -1,8 +1,9 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import Layout from "./components/layout/Layout";
 import SplashScreen from "./components/ui/SplashScreen";
+import { RouteSkeleton } from "./components/ui";
 import { useAuth } from "./context/AuthContext";
 import AuthPage from "./pages/AuthPage";
 import CreateEventPage from "./pages/CreateEventPage";
@@ -17,11 +18,7 @@ function ProtectedLayout() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center">
-        <div className="text-sm text-zinc-400">Loading...</div>
-      </div>
-    );
+    return <div className="mx-auto max-w-7xl px-4 py-6 md:px-6"><RouteSkeleton /></div>;
   }
 
   if (!user) {
@@ -35,11 +32,7 @@ function PublicOnly({ children }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center">
-        <div className="text-sm text-zinc-400">Loading...</div>
-      </div>
-    );
+    return <div className="mx-auto max-w-7xl px-4 py-6 md:px-6"><RouteSkeleton title="Preparing the welcome flow" /></div>;
   }
 
   return user ? <Navigate to="/" replace /> : children;
@@ -64,13 +57,13 @@ export default function App() {
           />
 
           <Route path="/" element={<ProtectedLayout />}>
-        <Route index element={<DashboardPage />} />
-        <Route path="events" element={<EventsPage />} />
-        <Route path="events/:id" element={<EventDetailPage />} />
-        <Route path="user/:userId" element={<UserProfilePage />} />
-        <Route path="create" element={<CreateEventPage />} />
-        <Route path="map" element={<MapPage />} />
-        <Route path="leaderboard" element={<LeaderboardPage />} />
+            <Route index element={<DashboardPage />} />
+            <Route path="events" element={<EventsPage />} />
+            <Route path="events/:id" element={<EventDetailPage />} />
+            <Route path="user/:userId" element={<UserProfilePage />} />
+            <Route path="create" element={<CreateEventPage />} />
+            <Route path="map" element={<MapPage />} />
+            <Route path="leaderboard" element={<LeaderboardPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

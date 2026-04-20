@@ -5,7 +5,16 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import ChatRoom from "../components/chat/ChatRoom";
-import { Badge, Spinner, EventCountdown, AnimatedEventStatus, LiveParticipantCounter, ActivityFeed, LiveRunTracker } from "../components/ui";
+import {
+  Badge,
+  EventCountdown,
+  AnimatedEventStatus,
+  LiveParticipantCounter,
+  ActivityFeed,
+  RouteSkeleton,
+  FloatingInput,
+  FloatingTextarea
+} from "../components/ui";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../utils/api";
 import { loadGoogleMapsScript } from "../utils/googleMaps";
@@ -13,12 +22,12 @@ import { loadGoogleMapsScript } from "../utils/googleMaps";
 const mapsKey = import.meta.env.VITE_GOOGLE_MAPS_KEY;
 const defaultCenter = { lat: 28.6139, lng: 77.209 };
 const mapStyle = [
-  { elementType: "geometry", stylers: [{ color: "#0f0f1e" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#0f0f1e" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#06b6d4" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: "#1a1a2e" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0a0a14" }] },
-  { featureType: "poi", elementType: "geometry.fill", stylers: [{ color: "#16213e" }] }
+  { elementType: "geometry", stylers: [{ color: "#0a0a0a" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#0a0a0a" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#ff7373" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#200808" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#120606" }] },
+  { featureType: "poi", elementType: "geometry.fill", stylers: [{ color: "#170707" }] }
 ];
 
 function getParticipantId(entry) {
@@ -348,11 +357,7 @@ export default function EventDetailPage() {
   }, [editing, form.coordinates]);
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-24">
-        <Spinner size={28} />
-      </div>
-    );
+    return <RouteSkeleton title="Loading event details" description="Pulling chat, map pin, and participant activity." />;
   }
 
   if (!event) {
@@ -494,12 +499,15 @@ export default function EventDetailPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <button onClick={() => navigate("/events")} className="flex items-center gap-2 text-sm text-zinc-400">
+      <button
+        onClick={() => navigate("/events")}
+        className="flex items-center gap-2 text-sm font-semibold text-red-300 transition hover:text-red-200"
+      >
         <ArrowLeft size={16} />
         Back to Events
       </button>
 
-      <section className="card p-6">
+      <section className="card-elevated border border-red-500/20 p-6 md:p-7">
         {editing ? (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -509,46 +517,37 @@ export default function EventDetailPage() {
               </button>
             </div>
 
-            <div>
-              <label className="label">Title</label>
-              <input
-                className="input"
-                value={form.title}
-                onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
+            <FloatingInput
+              label="Title"
+              value={form.title}
+              onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
+            />
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <FloatingInput
+                type="datetime-local"
+                label="Date and Time"
+                value={form.date}
+                onChange={(event) => setForm((current) => ({ ...current, date: event.target.value }))}
+              />
+
+              <FloatingInput
+                type="number"
+                label="Max Participants"
+                min="1"
+                max="500"
+                value={form.maxParticipants}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, maxParticipants: event.target.value }))
+                }
               />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="label">Date and Time</label>
-                <input
-                  type="datetime-local"
-                  className="input"
-                  value={form.date}
-                  onChange={(event) => setForm((current) => ({ ...current, date: event.target.value }))}
-                />
-              </div>
-
-              <div>
-                <label className="label">Max Participants</label>
-                <input
-                  type="number"
-                  className="input"
-                  min="1"
-                  max="500"
-                  value={form.maxParticipants}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, maxParticipants: event.target.value }))
-                  }
-                />
-              </div>
-            </div>
-
             <div>
-              <label className="label">Location</label>
               <div className="flex flex-col gap-3 md:flex-row">
-                <input
-                  className="input"
+                <FloatingInput
+                  className="flex-1"
+                  label="Location"
                   value={form.location}
                   onChange={(event) =>
                     setForm((current) => ({
@@ -574,9 +573,9 @@ export default function EventDetailPage() {
             </div>
 
             <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-bold uppercase tracking-wider text-cyan-400">Update Event Pin</p>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-wider text-red-300">Update Event Pin</p>
                   <p className="mt-1 text-xs text-zinc-500">
                     Saving will update both the address and coordinates used in the Maps view.
                   </p>
@@ -608,9 +607,9 @@ export default function EventDetailPage() {
                   {editMapError}
                 </div>
               ) : (
-                <div className="relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-zinc-950/40">
+                <div className="relative overflow-hidden rounded-2xl border border-red-500/20 bg-zinc-950/40">
                   {editMapLoading ? (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center gap-2 bg-zinc-950/80 text-sm text-cyan-300">
+                    <div className="absolute inset-0 z-10 flex items-center justify-center gap-2 bg-zinc-950/80 text-sm text-red-200">
                       <Loader2 size={18} className="animate-spin" />
                       Loading map...
                     </div>
@@ -630,14 +629,11 @@ export default function EventDetailPage() {
               </div>
             </div>
 
-            <div>
-              <label className="label">Description</label>
-              <textarea
-                className="input min-h-[110px]"
-                value={form.description}
-                onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
-              />
-            </div>
+            <FloatingTextarea
+              label="Description"
+              value={form.description}
+              onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
+            />
 
             <button onClick={handleSave} disabled={saving} className="btn-primary">
               {saving ? "Saving..." : "Save Changes"}
@@ -671,7 +667,7 @@ export default function EventDetailPage() {
 
             <div className="mt-6 space-y-3 text-sm text-zinc-400">
               <div className="flex items-center gap-2">
-                <Calendar size={15} className="text-brand-400" />
+                <Calendar size={15} className="text-red-300" />
                 <span>{format(new Date(event.date), "EEEE, MMMM d, yyyy h:mm a")}</span>
               </div>
               {event.location ? (
@@ -717,7 +713,7 @@ export default function EventDetailPage() {
             ) : null}
 
             <div className="mt-8">
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.25em] text-cyan-400">
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.25em] text-red-300">
                 <MapPin size={15} />
                 Live Pin Location
               </div>
@@ -726,9 +722,9 @@ export default function EventDetailPage() {
                   {mapError}
                 </div>
               ) : null}
-              <div className="relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-zinc-950/40">
+              <div className="relative overflow-hidden rounded-2xl border border-red-500/20 bg-zinc-950/40">
                 {mapLoading ? (
-                  <div className="absolute inset-0 z-10 flex items-center justify-center gap-2 bg-zinc-950/80 text-sm text-cyan-300">
+                  <div className="absolute inset-0 z-10 flex items-center justify-center gap-2 bg-zinc-950/80 text-sm text-red-200">
                     <Loader2 size={18} className="animate-spin" />
                     Loading event map...
                   </div>
@@ -741,17 +737,19 @@ export default function EventDetailPage() {
       </section>
 
       <section>
-        <div className="mb-4 flex gap-2 rounded-2xl border border-zinc-800 bg-zinc-900 p-1">
+        <div className="mb-4 flex gap-2 rounded-2xl border border-white/10 bg-black/45 p-1">
           <button
             onClick={() => setActiveTab("chat")}
-            className={`rounded-xl px-4 py-2 text-sm ${activeTab === "chat" ? "bg-brand-400 text-zinc-950" : "text-zinc-400"}`}
+            className={`rounded-xl px-4 py-2 text-sm transition ${activeTab === "chat" ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-red-glow-sm" : "text-zinc-400 hover:text-white"}`}
           >
             Chat
           </button>
           <button
             onClick={() => setActiveTab("participants")}
             className={`rounded-xl px-4 py-2 text-sm ${
-              activeTab === "participants" ? "bg-brand-400 text-zinc-950" : "text-zinc-400"
+              activeTab === "participants"
+                ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-red-glow-sm"
+                : "text-zinc-400 hover:text-white"
             }`}
           >
             Participants ({count})
@@ -759,7 +757,9 @@ export default function EventDetailPage() {
           <button
             onClick={() => setActiveTab("activity")}
             className={`rounded-xl px-4 py-2 text-sm ${
-              activeTab === "activity" ? "bg-brand-400 text-zinc-950" : "text-zinc-400"
+              activeTab === "activity"
+                ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-red-glow-sm"
+                : "text-zinc-400 hover:text-white"
             }`}
           >
             Activity
@@ -784,10 +784,10 @@ export default function EventDetailPage() {
                       key={participantId || index}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="flex items-center gap-3"
-                    >
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-400/15 text-sm font-bold text-brand-300">
+                    transition={{ delay: index * 0.05 }}
+                    className="flex items-center gap-3"
+                  >
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-500/10 text-sm font-bold text-red-200">
                         {String(name || "R").charAt(0).toUpperCase()}
                       </div>
                       <p className="text-sm text-zinc-200">

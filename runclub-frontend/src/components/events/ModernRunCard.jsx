@@ -1,159 +1,128 @@
 import { motion } from "framer-motion";
-import { MapPin, Clock, Zap, TrendingUp } from "lucide-react";
+import { CalendarDays, Clock3, MapPin } from "lucide-react";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
+
+const gradientMap = {
+  morning: "from-red-500/20 via-red-800/15 to-black",
+  afternoon: "from-red-600/20 via-red-900/15 to-black",
+  evening: "from-red-700/20 via-black to-black",
+  night: "from-red-950/30 via-black to-black"
+};
+
+function getTimeOfDay(date) {
+  const hour = new Date(date).getHours();
+
+  if (hour < 12) return "morning";
+  if (hour < 17) return "afternoon";
+  if (hour < 21) return "evening";
+  return "night";
+}
 
 export default function ModernRunCard({ event, isJoined, onJoin, onLeave }) {
-  const colorMap = {
-    morning: "from-orange-500 to-yellow-500",
-    afternoon: "from-cyan-500 to-blue-500",
-    evening: "from-purple-500 to-pink-500",
-    night: "from-blue-500 to-indigo-500"
-  };
-
-  const getTimeOfDay = (date) => {
-    const hour = new Date(date).getHours();
-    if (hour < 12) return "morning";
-    if (hour < 17) return "afternoon";
-    if (hour < 21) return "evening";
-    return "night";
-  };
-
+  const navigate = useNavigate();
   const timeOfDay = getTimeOfDay(event.date);
-  const colorGradient = colorMap[timeOfDay];
   const isPast = new Date(event.date) < new Date();
   const participants = event.participants?.length || 0;
-  const distance = Math.random() * 10 + 2; // Mock distance
+
+  const handlePrimaryAction = () => {
+    if (isJoined && onLeave) {
+      onLeave();
+      return;
+    }
+
+    if (!isJoined && onJoin) {
+      onJoin();
+      return;
+    }
+
+    navigate(`/events/${event._id}`);
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
+    <motion.article
+      initial={{ opacity: 0, x: 18 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      whileHover={{ scale: 1.02 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="relative overflow-hidden rounded-2xl"
+      exit={{ opacity: 0, x: -18 }}
+      whileHover={{ y: -8, scale: 1.015 }}
+      transition={{ type: "spring", stiffness: 260, damping: 24 }}
+      className="card group overflow-hidden"
     >
-      {/* Glassmorphism background */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${colorGradient} opacity-10`} />
-      
-      <div className="relative border-2 border-white/10 rounded-2xl bg-white/5 backdrop-blur-xl overflow-hidden hover:border-white/20 transition-colors group flex flex-col">
-        {/* Event Image */}
-        {event.image && (
-          <div className="h-36 w-full overflow-hidden bg-gradient-to-br from-zinc-800 to-zinc-900">
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradientMap[timeOfDay]} opacity-80`} />
+      <div className="absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:20px_20px]" />
+
+      <div className="relative flex h-full flex-col">
+        {event.image ? (
+          <div className="h-36 w-full overflow-hidden bg-black/40">
             <img
               src={event.image}
               alt={event.title}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           </div>
-        )}
+        ) : null}
 
-        {/* Glow effect on hover */}
-        <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="flex flex-1 flex-col p-5">
+          <div className="mb-4 flex items-start justify-between gap-4">
+            <div>
+              <span className="inline-flex rounded-full border border-red-400/20 bg-red-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-red-200">
+                {timeOfDay}
+              </span>
+              <h3 className="mt-3 text-xl font-bold text-white">{event.title}</h3>
+            </div>
+            {isPast ? (
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-zinc-300">
+                Completed
+              </span>
+            ) : null}
+          </div>
 
-        <div className="relative z-10 p-6 flex flex-col flex-1">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-gradient-to-r ${colorGradient} bg-opacity-20 border border-white/10 mb-3`}>
-                <Zap size={12} className="text-white" />
-                <span className="text-xs font-bold text-white uppercase tracking-wider">
-                  {timeOfDay === "morning" && "🌅 Morning"}
-                  {timeOfDay === "afternoon" && "☀️ Afternoon"}
-                  {timeOfDay === "evening" && "🌅 Evening"}
-                  {timeOfDay === "night" && "🌙 Night"}
-                </span>
+          <div className="mb-5 grid grid-cols-3 gap-3">
+            <div className="rounded-2xl border border-white/10 bg-black/35 p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">Distance</p>
+              <p className="mt-2 text-sm font-bold text-red-200">{event.distance ? `${event.distance} km` : "TBD"}</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/35 p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">Time</p>
+              <p className="mt-2 text-sm font-bold text-white">{format(new Date(event.date), "HH:mm")}</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/35 p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">People</p>
+              <p className="mt-2 text-sm font-bold text-white">{participants}</p>
+            </div>
+          </div>
+
+          <div className="space-y-2 text-sm text-zinc-300">
+            <div className="flex items-center gap-2">
+              <MapPin size={15} className="text-red-300" />
+              <span className="truncate">{event.location || "Pinned meetup spot"}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CalendarDays size={15} className="text-red-300" />
+              <span>{format(new Date(event.date), "EEEE, MMM d, yyyy")}</span>
+            </div>
+            {event.pace ? (
+              <div className="flex items-center gap-2">
+                <Clock3 size={15} className="text-red-300" />
+                <span>{event.pace}</span>
               </div>
-              <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors">
-                {event.title}
-              </h3>
-            </div>
-            {isPast && (
-              <div className="text-xs font-bold text-green-400 uppercase">✓ Completed</div>
-            )}
+            ) : null}
           </div>
 
-          {/* Difficulty & Terrain badges */}
-          {(event.difficulty || event.terrain || event.distance || event.pace) && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {event.difficulty && (
-                <span className="text-xs px-2 py-1 rounded-full bg-indigo-500/20 text-indigo-300">
-                  {event.difficulty === "beginner" && "🟢"}
-                  {event.difficulty === "intermediate" && "🟡"}
-                  {event.difficulty === "advanced" && "🔴"}
-                  {" " + event.difficulty.charAt(0).toUpperCase() + event.difficulty.slice(1)}
-                </span>
-              )}
-              {event.terrain && (
-                <span className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-300">
-                  {event.terrain === "road" && "🛣️"}
-                  {event.terrain === "trail" && "🥾"}
-                  {event.terrain === "mixed" && "🔀"}
-                  {" " + event.terrain}
-                </span>
-              )}
-              {event.distance && (
-                <span className="text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-300">
-                  📏 {event.distance}km
-                </span>
-              )}
-              {event.pace && (
-                <span className="text-xs px-2 py-1 rounded-full bg-lime-500/20 text-lime-300">
-                  ⏱️ {event.pace}
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Stats grid */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
-            {/* Distance */}
-            <div className="rounded-lg bg-white/5 p-3 border border-white/10">
-              <p className="text-xs text-zinc-400 font-semibold uppercase tracking-wider mb-1">Distance</p>
-              <p className="text-lg font-bold text-cyan-400">{event.distance || distance.toFixed(1)} km</p>
-            </div>
-
-            {/* Time */}
-            <div className="rounded-lg bg-white/5 p-3 border border-white/10">
-              <p className="text-xs text-zinc-400 font-semibold uppercase tracking-wider mb-1">Time</p>
-              <p className="text-lg font-bold text-purple-400">
-                {format(new Date(event.date), "HH:mm")}
-              </p>
-            </div>
-
-            {/* Participants */}
-            <div className="rounded-lg bg-white/5 p-3 border border-white/10">
-              <p className="text-xs text-zinc-400 font-semibold uppercase tracking-wider mb-1">People</p>
-              <p className="text-lg font-bold text-pink-400">{participants}</p>
-            </div>
-          </div>
-
-          {/* Location */}
-          <div className="flex items-center gap-2 text-sm text-zinc-300 mb-6">
-            <MapPin size={16} className="text-cyan-400 flex-shrink-0" />
-            <span className="truncate">{event.location || "TBA"}</span>
-          </div>
-
-          {/* Date */}
-          <p className="text-xs text-zinc-400 mb-6">
-            📅 {format(new Date(event.date), "EEEE, MMM d, yyyy")}
-          </p>
-
-          {/* CTA Button */}
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => (isJoined ? onLeave?.() : onJoin?.())}
-            className={`w-full py-3 rounded-lg font-bold uppercase tracking-wider transition-all ${
-              isJoined
-                ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/40 hover:shadow-green-500/60"
-                : "bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/40 hover:shadow-cyan-500/60"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handlePrimaryAction}
+            className={`mt-6 w-full rounded-2xl py-3 text-sm font-bold uppercase tracking-[0.24em] transition-all ${
+              isJoined && onLeave
+                ? "border border-red-400/30 bg-red-600/15 text-red-100 shadow-red-glow-sm"
+                : "border border-red-400/30 bg-gradient-to-r from-red-600 to-red-700 text-white shadow-red-glow-sm"
             }`}
           >
-            {isJoined ? "✓ Joined" : "Join Run"}
+            {isJoined && onLeave ? "Leave Run" : onJoin ? "Join Run" : "View Run"}
           </motion.button>
         </div>
       </div>
-    </motion.div>
+    </motion.article>
   );
 }

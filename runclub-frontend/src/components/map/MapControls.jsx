@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Volume2, VolumeX, Map, Zap } from "lucide-react";
 
-export default function MapControls({ 
-  onToggleLiveTracking, 
-  onToggleHeatmap, 
+export default function MapControls({
+  onToggleLiveTracking,
+  onToggleHeatmap,
   onToggleAnimations,
   onToggleSound,
   liveTracking = true,
@@ -18,8 +18,8 @@ export default function MapControls({
       whileTap={{ scale: 0.95 }}
       className={`flex items-center gap-2 rounded-lg px-4 py-2.5 transition ${
         isActive
-          ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/50"
-          : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+          ? "border border-red-400/30 bg-gradient-to-r from-red-600 to-red-700 text-white shadow-red-glow-sm"
+          : "border border-white/10 bg-zinc-950/80 text-zinc-300 hover:border-red-500/30 hover:bg-zinc-900"
       }`}
     >
       <Icon size={16} />
@@ -38,7 +38,7 @@ export default function MapControls({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-wrap gap-2 p-4 rounded-xl bg-zinc-900/80 backdrop-blur border border-zinc-800"
+      className="flex flex-wrap gap-2 rounded-[24px] border border-white/10 bg-black/55 p-4 backdrop-blur"
     >
       <ToggleButton
         icon={liveTracking ? Eye : EyeOff}

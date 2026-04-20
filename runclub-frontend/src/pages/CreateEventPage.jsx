@@ -11,12 +11,12 @@ const mapsKey = import.meta.env.VITE_GOOGLE_MAPS_KEY;
 const today = new Date().toISOString().slice(0, 16);
 const defaultCenter = { lat: 28.6139, lng: 77.209 };
 const mapStyle = [
-  { elementType: "geometry", stylers: [{ color: "#0f0f1e" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#0f0f1e" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#06b6d4" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: "#1a1a2e" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0a0a14" }] },
-  { featureType: "poi", elementType: "geometry.fill", stylers: [{ color: "#16213e" }] }
+  { elementType: "geometry", stylers: [{ color: "#0a0a0a" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#0a0a0a" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#ff7373" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#200808" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#120606" }] },
+  { featureType: "poi", elementType: "geometry.fill", stylers: [{ color: "#170707" }] }
 ];
 
 export default function CreateEventPage() {

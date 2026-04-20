@@ -67,13 +67,13 @@ export default function LiveNotifications() {
   const getColors = (type) => {
     switch (type) {
       case "success":
-        return "bg-green-500/10 border-green-500/30 text-green-100";
+        return "bg-red-500/10 border-red-500/25 text-red-100";
       case "error":
         return "bg-red-500/10 border-red-500/30 text-red-100";
       case "warning":
-        return "bg-yellow-500/10 border-yellow-500/30 text-yellow-100";
+        return "bg-red-500/10 border-red-500/25 text-red-100";
       default:
-        return "bg-blue-500/10 border-blue-500/30 text-blue-100";
+        return "bg-black/80 border-white/10 text-zinc-100";
     }
   };
 
@@ -89,7 +89,7 @@ export default function LiveNotifications() {
               animate={{ opacity: 1, y: 0, x: 0 }}
               exit={{ opacity: 0, y: -20, x: 400 }}
               transition={{ duration: 0.3 }}
-              className={`flex items-start gap-3 rounded-lg border p-4 ${getColors(notif.type)} pointer-events-auto`}
+              className={`pointer-events-auto flex items-start gap-3 rounded-2xl border p-4 shadow-lg backdrop-blur ${getColors(notif.type)}`}
             >
               <Icon size={18} className="mt-0.5 flex-shrink-0" />
               <div className="flex-1">

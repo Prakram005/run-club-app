@@ -2,14 +2,21 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Activity, Mountain, Users, Zap } from "lucide-react";
 
+const featurePills = [
+  { icon: Activity, label: "Live tracking" },
+  { icon: Mountain, label: "Map pinned" },
+  { icon: Users, label: "Crew ready" },
+  { icon: Zap, label: "Realtime" }
+];
+
 export default function SplashScreen({ onComplete }) {
   const [showIcon, setShowIcon] = useState(false);
   const [showText, setShowText] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowIcon(true), 300);
-    const timerText = setTimeout(() => setShowText(true), 1000);
-    const timerComplete = setTimeout(() => onComplete(), 4500);
+    const timer = setTimeout(() => setShowIcon(true), 280);
+    const timerText = setTimeout(() => setShowText(true), 850);
+    const timerComplete = setTimeout(() => onComplete(), 3600);
 
     return () => {
       clearTimeout(timer);
@@ -23,18 +30,18 @@ export default function SplashScreen({ onComplete }) {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3
+        staggerChildren: 0.14,
+        delayChildren: 0.2
       }
     }
   };
 
   const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
+    hidden: { y: 18, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
-      transition: { duration: 0.8, ease: "easeOut" }
+      transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] }
     }
   };
 
@@ -43,132 +50,99 @@ export default function SplashScreen({ onComplete }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
-      className="fixed inset-0 z-[9999] bg-gradient-to-br from-zinc-950 via-blue-950 to-purple-950 flex items-center justify-center overflow-hidden"
+      transition={{ duration: 0.45 }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(255,26,26,0.22),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(120,0,0,0.2),transparent_35%),linear-gradient(135deg,#020202,#090909,#140505,#030303)]"
     >
-      {/* Animated Background Gradients */}
       <motion.div
-        animate={{
-          scale: [1, 1.5, 1],
-          opacity: [0.3, 0.6, 0.3]
-        }}
-        transition={{ duration: 4, repeat: Infinity }}
-        className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-purple-500/20 to-pink-500/20"
+        animate={{ scale: [1, 1.08, 1], opacity: [0.2, 0.45, 0.2] }}
+        transition={{ duration: 4.8, repeat: Infinity }}
+        className="absolute inset-0 bg-[radial-gradient(circle,rgba(255,77,77,0.18),transparent_40%)]"
+      />
+      <motion.div
+        animate={{ x: [0, 60, 0], y: [0, 24, 0] }}
+        transition={{ duration: 7, repeat: Infinity }}
+        className="absolute left-10 top-20 h-60 w-60 rounded-full bg-red-500/20 blur-[110px]"
+      />
+      <motion.div
+        animate={{ x: [0, -60, 0], y: [0, -24, 0] }}
+        transition={{ duration: 8.5, repeat: Infinity, delay: 0.8 }}
+        className="absolute bottom-10 right-16 h-72 w-72 rounded-full bg-red-900/25 blur-[120px]"
       />
 
-      {/* Floating Orbs */}
-      <motion.div
-        animate={{ x: [0, 100, 0], y: [0, 50, 0] }}
-        transition={{ duration: 6, repeat: Infinity }}
-        className="absolute top-20 left-20 w-64 h-64 bg-cyan-500/30 rounded-full blur-3xl"
-      />
-      <motion.div
-        animate={{ x: [0, -100, 0], y: [0, -50, 0] }}
-        transition={{ duration: 8, repeat: Infinity, delay: 1 }}
-        className="absolute bottom-20 right-20 w-64 h-64 bg-purple-500/30 rounded-full blur-3xl"
-      />
-
-      {/* Main Content */}
-      <div className="relative z-10 text-center max-w-2xl mx-auto px-4">
-        {/* Icon Animation */}
-        {showIcon && (
+      <div className="relative z-10 mx-auto max-w-3xl px-4 text-center">
+        {showIcon ? (
           <motion.div
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: "spring", stiffness: 100, damping: 15, duration: 0.8 }}
+            transition={{ type: "spring", stiffness: 110, damping: 16, duration: 0.8 }}
             className="mb-8"
           >
             <motion.div
-              animate={{ y: [0, -20, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              animate={{ y: [0, -14, 0] }}
+              transition={{ duration: 2.2, repeat: Infinity }}
               className="inline-block"
             >
-              <div className="relative w-24 h-24 mx-auto">
+              <div className="relative mx-auto h-24 w-24">
                 <motion.div
                   animate={{ rotate: 360 }}
-                  transition={{ duration: 4, repeat: Infinity, linear: true }}
-                  className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 rounded-full blur"
+                  transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-0 rounded-full bg-gradient-to-r from-red-500 via-red-400 to-red-800 blur-md"
                 />
-                <div className="absolute inset-1 bg-zinc-950 rounded-full flex items-center justify-center">
-                  <Activity size={48} className="text-cyan-400" />
+                <div className="absolute inset-1 flex items-center justify-center rounded-full border border-red-300/20 bg-black/90">
+                  <Activity size={44} className="text-red-300" />
                 </div>
               </div>
             </motion.div>
           </motion.div>
-        )}
+        ) : null}
 
-        {/* Text Animation */}
-        {showText && (
+        {showText ? (
           <motion.div variants={containerVariants} initial="hidden" animate="visible">
             <motion.div variants={itemVariants}>
-              <h1 className="text-6xl md:text-7xl font-display font-black mb-4">
-                <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-                  RUN
-                </span>
-                <span className="text-white mx-3">•</span>
-                <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 bg-clip-text text-transparent">
-                  CLUB
-                </span>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.36em] text-red-300">Run Club</p>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <h1 className="mt-4 font-display text-6xl font-black md:text-7xl">
+                <span className="text-white">RUN</span>
+                <span className="mx-3 text-red-400">/</span>
+                <span className="text-gradient-red">CLUB</span>
               </h1>
             </motion.div>
 
-            <motion.p
-              variants={itemVariants}
-              className="text-xl md:text-2xl text-cyan-300 font-semibold mb-8"
-            >
-              Move Together. Build Your Crew.
+            <motion.p variants={itemVariants} className="mt-5 text-xl font-semibold text-red-100 md:text-2xl">
+              Move together. Build your crew.
             </motion.p>
 
-            {/* Feature Pills */}
-            <motion.div
-              variants={itemVariants}
-              className="flex flex-wrap justify-center gap-4 mb-12"
-            >
-              {[
-                { icon: Activity, label: "Live Tracking", color: "from-cyan-500 to-blue-500" },
-                { icon: Mountain, label: "Map View", color: "from-blue-500 to-purple-500" },
-                { icon: Users, label: "Community", color: "from-purple-500 to-pink-500" },
-                { icon: Zap, label: "Real-time", color: "from-pink-500 to-red-500" }
-              ].map((feature, idx) => {
+            <motion.div variants={itemVariants} className="mt-10 flex flex-wrap justify-center gap-3">
+              {featurePills.map((feature) => {
                 const Icon = feature.icon;
                 return (
                   <motion.div
-                    key={idx}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r ${feature.color} text-white font-semibold text-sm shadow-lg`}
+                    key={feature.label}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    className="flex items-center gap-2 rounded-full border border-red-400/20 bg-black/45 px-4 py-2 text-sm font-semibold text-zinc-100 backdrop-blur"
                   >
-                    <Icon size={16} />
+                    <Icon size={16} className="text-red-300" />
                     {feature.label}
                   </motion.div>
                 );
               })}
             </motion.div>
 
-            {/* Loading Indicator */}
-            <motion.div
-              variants={itemVariants}
-              className="flex justify-center items-center gap-2"
-            >
-              <motion.div
-                animate={{ scale: [1, 1.5, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="w-3 h-3 rounded-full bg-cyan-400"
-              />
-              <motion.div
-                animate={{ scale: [1, 1.5, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
-                className="w-3 h-3 rounded-full bg-purple-400"
-              />
-              <motion.div
-                animate={{ scale: [1, 1.5, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
-                className="w-3 h-3 rounded-full bg-pink-400"
-              />
-              <span className="text-zinc-400 ml-2 text-sm">Loading...</span>
+            <motion.div variants={itemVariants} className="mt-12 flex items-center justify-center gap-2">
+              {[0, 1, 2].map((item) => (
+                <motion.div
+                  key={item}
+                  animate={{ scale: [1, 1.45, 1], opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 1.4, repeat: Infinity, delay: item * 0.18 }}
+                  className="h-3 w-3 rounded-full bg-red-400"
+                />
+              ))}
+              <span className="ml-3 text-sm text-zinc-400">Loading your club</span>
             </motion.div>
           </motion.div>
-        )}
+        ) : null}
       </div>
     </motion.div>
   );

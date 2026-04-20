@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,6 +6,14 @@
 
 :root {
   color-scheme: dark;
+  --bg-base: #040404;
+  --bg-elevated: rgba(14, 14, 14, 0.72);
+  --stroke-soft: rgba(255, 255, 255, 0.08);
+  --stroke-strong: rgba(255, 77, 77, 0.3);
+  --accent-red: #ff1a1a;
+  --accent-red-soft: rgba(255, 26, 26, 0.22);
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
 }
 
 html,
@@ -16,94 +24,220 @@ body,
 
 body {
   margin: 0;
-  background: linear-gradient(135deg, #000000 0%, #0f0f0f 25%, #1a1a1a 50%, #0f0f0f 75%, #000000 100%);
-  color: #ffffff;
-  font-family: "Inter", system-ui, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(255, 26, 26, 0.18), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(120, 0, 0, 0.18), transparent 28%),
+    linear-gradient(135deg, #030303 0%, #080808 18%, #120505 42%, #090909 68%, #020202 100%);
+  background-size: 160% 160%;
+  color: var(--text-primary);
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  animation: gradient-shift 18s ease infinite;
 }
 
 * {
   box-sizing: border-box;
 }
 
-/* Smooth scrolling */
 html {
   scroll-behavior: smooth;
 }
 
-/* Custom scrollbar with RED theme */
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: auto;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 999px;
+  filter: blur(120px);
+  opacity: 0.45;
+}
+
+body::before {
+  top: -6rem;
+  left: -7rem;
+  height: 18rem;
+  width: 18rem;
+  background: rgba(255, 26, 26, 0.24);
+  animation: float-orb 13s ease-in-out infinite;
+}
+
+body::after {
+  right: -9rem;
+  bottom: -7rem;
+  height: 22rem;
+  width: 22rem;
+  background: rgba(120, 0, 0, 0.24);
+  animation: float-orb 15s ease-in-out infinite reverse;
+}
+
+::selection {
+  background: rgba(255, 26, 26, 0.35);
+  color: #ffffff;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.45);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 26, 26, 0.6);
+  background: linear-gradient(180deg, rgba(255, 77, 77, 0.8), rgba(120, 0, 0, 0.8));
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 26, 26, 0.9);
+  background: linear-gradient(180deg, rgba(255, 102, 102, 1), rgba(170, 0, 0, 1));
+}
+
+@layer base {
+  body {
+    @apply text-white antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: "Space Grotesk", sans-serif;
+    letter-spacing: -0.03em;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
 }
 
 @layer components {
-  /* Glassmorphism + Neumorphism Cards */
+  .app-shell {
+    @apply relative min-h-screen;
+  }
+
   .card {
-    @apply rounded-2xl border border-red-600/20 bg-gradient-to-br from-black/40 to-red-950/10 backdrop-blur-xl backdrop-filter shadow-glass transition-all duration-300 hover:border-red-600/40 hover:shadow-red-glow;
+    @apply rounded-[28px] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] backdrop-blur-xl shadow-glass transition-all duration-300 hover:border-red-500/25 hover:shadow-red-glow;
   }
 
   .card-elevated {
-    @apply rounded-2xl border border-red-600/30 bg-gradient-to-br from-red-900/15 via-black/50 to-black/70 backdrop-blur-xl shadow-neumorphic transition-all duration-300;
+    @apply rounded-[32px] border border-red-500/20 bg-[linear-gradient(145deg,rgba(255,40,40,0.08),rgba(8,8,8,0.88))] backdrop-blur-2xl shadow-neumorphic transition-all duration-300;
   }
 
   .card-hover {
-    @apply cursor-pointer transition-all duration-300 hover:shadow-red-glow-lg hover:shadow-lg hover:scale-105;
+    @apply cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.02] hover:shadow-red-glow-lg;
   }
 
-  /* Glassmorphic Input Fields */
   .input {
-    @apply w-full rounded-xl border border-red-600/20 bg-black/40 backdrop-blur-md px-4 py-3 text-sm text-white outline-none transition placeholder:text-gray-500 focus:border-red-600 focus:ring-2 focus:ring-red-600/30 focus:shadow-red-glow-sm;
+    @apply w-full rounded-2xl border border-white/10 bg-black/55 px-4 py-3 text-sm text-white outline-none transition duration-300 placeholder:text-zinc-500 focus:border-red-500/60 focus:bg-black/70 focus:ring-2 focus:ring-red-500/20 focus:shadow-red-glow-sm;
   }
 
   .input-focus {
-    @apply focus:border-red-600 focus:ring-2 focus:ring-red-600/40 focus:shadow-red-glow;
+    @apply focus:border-red-500 focus:ring-2 focus:ring-red-500/30 focus:shadow-red-glow;
   }
 
   .label {
-    @apply mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-400;
+    @apply mb-2 block text-xs font-semibold uppercase tracking-[0.26em] text-zinc-500;
   }
 
-  /* Red Gradient Buttons */
   .btn-primary {
-    @apply relative inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-6 py-3 text-sm font-bold text-white transition-all duration-300 hover:shadow-red-glow-lg hover:scale-105 hover:from-red-500 hover:to-red-600 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply relative isolate inline-flex items-center justify-center overflow-hidden rounded-2xl border border-red-500/40 bg-gradient-to-r from-red-600 via-red-500 to-red-700 px-6 py-3 text-sm font-bold text-white shadow-red-glow-sm transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.03] hover:shadow-red-glow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .btn-primary-glow {
-    @apply relative overflow-hidden rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-6 py-3 text-sm font-bold text-white shadow-red-glow transition-all duration-300 hover:shadow-red-glow-lg;
+    @apply relative isolate inline-flex items-center justify-center overflow-hidden rounded-2xl border border-red-400/40 bg-gradient-to-r from-red-600 via-red-500 to-red-700 px-6 py-3 text-sm font-bold text-white shadow-red-glow transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.03] hover:shadow-red-glow-lg active:scale-[0.98];
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center rounded-xl border border-red-600/30 bg-black/40 px-6 py-3 text-sm font-bold text-gray-200 transition-all duration-300 hover:border-red-600 hover:text-red-400 hover:bg-red-950/20 hover:shadow-red-glow-sm;
+    @apply inline-flex items-center justify-center rounded-2xl border border-white/10 bg-black/45 px-5 py-3 text-sm font-bold text-zinc-200 transition-all duration-300 hover:border-red-500/40 hover:bg-red-950/20 hover:text-white hover:shadow-red-glow-sm;
   }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center rounded-xl border border-red-600/50 bg-red-600/20 px-6 py-3 text-sm font-bold text-red-300 transition-all duration-300 hover:bg-red-600/30 hover:shadow-red-glow;
+    @apply inline-flex items-center justify-center rounded-2xl border border-red-400/40 bg-red-600/15 px-5 py-3 text-sm font-bold text-red-200 transition-all duration-300 hover:bg-red-600/25 hover:shadow-red-glow;
   }
 
   .btn-subtle {
-    @apply inline-flex items-center justify-center rounded-xl border border-transparent bg-gray-800/50 px-4 py-2 text-xs font-semibold text-gray-300 transition-all duration-300 hover:bg-red-900/30 hover:text-red-300 hover:border-red-600/30;
+    @apply inline-flex items-center justify-center rounded-xl border border-transparent bg-zinc-900/60 px-4 py-2 text-xs font-semibold text-zinc-300 transition-all duration-300 hover:border-red-500/30 hover:bg-red-900/20 hover:text-red-200;
+  }
+
+  .btn-primary::before,
+  .btn-primary-glow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(120deg, transparent 20%, rgba(255, 255, 255, 0.18) 50%, transparent 80%);
+    transform: translateX(-120%);
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 0;
+  }
+
+  .btn-primary:hover::before,
+  .btn-primary-glow:hover::before {
+    transform: translateX(120%);
+  }
+
+  .btn-primary > *,
+  .btn-primary-glow > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .floating-field {
+    @apply relative;
+  }
+
+  .floating-control {
+    @apply w-full rounded-[26px] border border-white/10 bg-black/55 px-4 pb-3 pt-7 text-sm text-white outline-none transition duration-300 placeholder:text-transparent focus:border-red-500/55 focus:bg-black/70 focus:ring-2 focus:ring-red-500/20 focus:shadow-red-glow-sm;
+  }
+
+  .floating-select {
+    @apply pr-10;
+  }
+
+  .floating-label {
+    @apply pointer-events-none absolute left-4 top-4 origin-left text-[11px] font-semibold uppercase tracking-[0.28em] text-zinc-500 transition-all duration-300;
+  }
+
+  .floating-control:focus + .floating-label {
+    @apply top-3 scale-90 text-red-300;
+  }
+
+  .floating-label-active {
+    @apply top-3 scale-90 text-red-300;
+  }
+
+  .skeleton-block {
+    @apply relative overflow-hidden bg-zinc-900/80;
+  }
+
+  .skeleton-block::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: translateX(-100%);
+    animation: shimmer 1.8s infinite;
   }
 }
 
-/* Advanced Animations */
 @keyframes shimmer {
   0% {
-    background-position: -1000px 0;
+    transform: translateX(-100%);
   }
   100% {
-    background-position: 1000px 0;
+    transform: translateX(100%);
   }
 }
 
@@ -122,6 +256,38 @@ html {
   }
   50% {
     opacity: 0.8;
+  }
+}
+
+@keyframes count-up {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float-orb {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-28px) translateX(18px);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }
 
@@ -144,38 +310,6 @@ html {
   to {
     opacity: 1;
     transform: translateX(0);
-  }
-}
-
-@keyframes count-up {
-  from {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes gradient-shift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
   }
 }
 
@@ -206,7 +340,7 @@ html {
 }
 
 .animate-float {
-  animation: float 3s ease-in-out infinite;
+  animation: float-orb 3s ease-in-out infinite;
 }
 
 .animate-gradient-shift {
@@ -214,7 +348,6 @@ html {
   animation: gradient-shift 3s ease infinite;
 }
 
-/* Glassmorphism utilities */
 .glass-effect {
   @apply backdrop-blur-xl backdrop-filter bg-black/30;
 }
@@ -223,7 +356,6 @@ html {
   @apply border border-red-600/20;
 }
 
-/* Red Glow effects */
 .glow-red {
   @apply shadow-red-glow;
 }
@@ -236,11 +368,10 @@ html {
   @apply shadow-red-glow-sm;
 }
 
-/* Text gradients */
 .text-gradient-red {
-  @apply bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-red-300 via-red-500 to-red-700 bg-clip-text text-transparent;
 }
 
 .text-gradient-white-red {
-  @apply bg-gradient-to-r from-white to-red-600 bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-white via-red-200 to-red-600 bg-clip-text text-transparent;
 }

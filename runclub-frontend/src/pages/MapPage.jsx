@@ -5,19 +5,24 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import MapControls from "../components/map/MapControls";
 import { EngagingButton, GlowingText, FloatingParticles } from "../components/ui/EngagingUI";
+import { useAuth } from "../context/AuthContext";
 import { loadGoogleMapsScript } from "../utils/googleMaps";
 import * as api from "../utils/api";
 
 const mapsKey = import.meta.env.VITE_GOOGLE_MAPS_KEY;
 const defaultCenter = { lat: 28.6139, lng: 77.209 };
 const darkStyle = [
-  { elementType: "geometry", stylers: [{ color: "#0f0f1e" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#0f0f1e" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#06b6d4" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: "#1a1a2e" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0a0a14" }] },
-  { featureType: "poi", elementType: "geometry.fill", stylers: [{ color: "#16213e" }] }
+  { elementType: "geometry", stylers: [{ color: "#0a0a0a" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#0a0a0a" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#ff7373" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#200808" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#120606" }] },
+  { featureType: "poi", elementType: "geometry.fill", stylers: [{ color: "#170707" }] }
 ];
+
+function getParticipantId(entry) {
+  return typeof entry === "object" ? entry?._id : entry;
+}
 
 function getEventCoordinates(event) {
   const latitude = Number(event?.coordinates?.latitude);
@@ -60,6 +65,7 @@ function distanceInKm(from, to) {
 export default function MapPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const geocoderRef = useRef(null);
@@ -83,10 +89,17 @@ export default function MapPage() {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [userPosition, setUserPosition] = useState(null);
   const eventId = searchParams.get("eventId");
+  const [scope, setScope] = useState(eventId ? "community" : "mine");
 
   useEffect(() => {
     api.getEvents().then((response) => setEvents(response.data || []));
   }, []);
+
+  useEffect(() => {
+    if (eventId) {
+      focusedEventRef.current = eventId;
+    }
+  }, [eventId]);
 
   useEffect(() => {
     if (!mapsKey || mapsKey === "YOUR_GOOGLE_MAPS_API_KEY") {
@@ -127,11 +140,11 @@ export default function MapPage() {
 
     setSelected(event);
     infoWindowRef.current?.setContent(
-      `<div style="background:#0f0f1e;color:#f4f4f5;padding:12px 16px;border-radius:12px;min-width:220px;border:1px solid #06b6d4;">
-        <div style="font-weight:700;font-size:14px;margin-bottom:6px;color:#06b6d4;">${escapeHtml(event.title)}</div>
+      `<div style="background:#090909;color:#f4f4f5;padding:12px 16px;border-radius:16px;min-width:220px;border:1px solid rgba(255,77,77,0.28);box-shadow:0 0 24px rgba(255,26,26,0.18);">
+        <div style="font-weight:700;font-size:14px;margin-bottom:6px;color:#ff7373;">${escapeHtml(event.title)}</div>
         <div style="font-size:12px;color:#a1a1aa;margin-bottom:4px;">${escapeHtml(event.location || "Pinned meetup spot")}</div>
         <div style="font-size:11px;color:#71717a;">${format(new Date(event.date), "MMM d h:mm a")}</div>
-        <div style="font-size:11px;color:#06b6d4;margin-top:4px;">${event.participants?.length || 0} runners</div>
+        <div style="font-size:11px;color:#ff9999;margin-top:4px;">${event.participants?.length || 0} runners</div>
       </div>`
     );
     infoWindowRef.current?.open(mapInstance.current, marker);
@@ -145,9 +158,9 @@ export default function MapPage() {
       icon: {
         path: window.google.maps.SymbolPath.CIRCLE,
         scale: 12,
-        fillColor: "#06b6d4",
+        fillColor: "#ff4d4f",
         fillOpacity: 0.9,
-        strokeColor: "#0891b2",
+        strokeColor: "#7f1d1d",
         strokeWeight: 2
       }
     });
@@ -167,6 +180,20 @@ export default function MapPage() {
     markersRef.current.push(marker);
   }, [openEventMarker]);
 
+  const visibleEvents = useMemo(() => {
+    const myId = String(user?.id || "");
+
+    if (!myId || scope === "community") {
+      return events;
+    }
+
+    return events.filter(
+      (event) =>
+        String(event.createdBy) === myId ||
+        event.participants?.some((entry) => String(getParticipantId(entry)) === myId)
+    );
+  }, [events, scope, user]);
+
   const placeMarkers = useCallback(() => {
     if (!mapInstance.current || !geocoderRef.current || !window.google?.maps) {
       return;
@@ -176,7 +203,7 @@ export default function MapPage() {
     markersRef.current = [];
     markerIndexRef.current = new Map();
 
-    events
+    visibleEvents
       .filter((event) => new Date(event.date) >= new Date() && (event.location || getEventCoordinates(event)))
       .forEach((event) => {
         const savedCoordinates = getEventCoordinates(event);
@@ -194,7 +221,7 @@ export default function MapPage() {
           renderMarker(event, results[0].geometry.location);
         });
       });
-  }, [events, renderMarker]);
+  }, [renderMarker, visibleEvents]);
 
   useEffect(() => {
     if (!loading && !mapsError) {
@@ -266,14 +293,14 @@ export default function MapPage() {
       radius: 25,
       opacity: 0.6,
       gradient: [
-        "#0a0a14",
-        "#06b6d4",
-        "#0891b2",
-        "#8b5cf6",
-        "#ec4899"
+        "#120606",
+        "#4c0d0d",
+        "#991b1b",
+        "#dc2626",
+        "#f87171"
       ]
     });
-  }, [showHeatmap, events]);
+  }, [showHeatmap, visibleEvents]);
 
   // Sound effect playback
   useEffect(() => {
@@ -340,7 +367,9 @@ export default function MapPage() {
   };
 
   const upcomingWithLocation = useMemo(() => {
-    const list = events.filter((event) => new Date(event.date) >= new Date() && (event.location || getEventCoordinates(event)));
+    const list = visibleEvents.filter(
+      (event) => new Date(event.date) >= new Date() && (event.location || getEventCoordinates(event))
+    );
 
     return list
       .map((event) => ({
@@ -362,7 +391,7 @@ export default function MapPage() {
 
         return left.distanceKm - right.distanceKm;
       });
-  }, [events, userPosition]);
+  }, [userPosition, visibleEvents]);
 
   return (
     <div className="space-y-6 relative">
@@ -379,19 +408,13 @@ export default function MapPage() {
         className="flex flex-wrap items-end justify-between gap-4"
       >
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-red-300">
             Explore
           </p>
           <h1 className="mt-2 font-display text-4xl font-bold">
-            <GlowingText color="cyan">Runs Near Me</GlowingText>
+            <GlowingText color="red">{scope === "mine" ? "My run map" : "Community map"}</GlowingText>
           </h1>
-          <motion.p
-            animate={{ opacity: [0.7, 1, 0.7] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="mt-2 text-sm text-cyan-400"
-          >
-            {upcomingWithLocation.length} live events with meetup locations
-          </motion.p>
+          <p className="mt-2 text-sm text-zinc-400">{upcomingWithLocation.length} upcoming events with pinned meetup spots</p>
         </div>
         <div className="flex gap-3">
           <MapControls
@@ -410,11 +433,30 @@ export default function MapPage() {
         </div>
       </motion.div>
 
+      <div className="flex flex-wrap gap-2 rounded-[24px] border border-white/10 bg-black/45 p-1.5 backdrop-blur">
+        {[
+          { id: "mine", label: "My runs" },
+          { id: "community", label: "Community" }
+        ].map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setScope(item.id)}
+            className={`rounded-[18px] px-4 py-2.5 text-sm font-semibold transition ${
+              scope === item.id
+                ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-red-glow-sm"
+                : "text-zinc-400 hover:text-white"
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
       {geoError ? (
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-2 rounded-2xl border border-pink-500/30 bg-gradient-to-r from-pink-500/10 to-red-500/10 backdrop-blur px-4 py-3 text-sm text-pink-300"
+          className="flex items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200 backdrop-blur"
         >
           <AlertCircle size={15} />
           {geoError}
@@ -425,13 +467,13 @@ export default function MapPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="card p-8 text-center border-2 border-red-500/30 bg-gradient-to-br from-red-500/10 to-pink-500/10"
+          className="card p-8 text-center border border-red-500/20 bg-black/45"
         >
           <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
-            <MapPin size={40} className="mx-auto text-red-500" />
+            <MapPin size={40} className="mx-auto text-red-300" />
           </motion.div>
-          <p className="mt-4 text-sm text-red-300 font-semibold">{mapsError}</p>
-          <pre className="mt-6 rounded-xl bg-zinc-950 p-4 text-left text-xs text-cyan-400 border border-cyan-500/30">
+          <p className="mt-4 text-sm font-semibold text-red-200">{mapsError}</p>
+          <pre className="mt-6 rounded-xl border border-white/10 bg-zinc-950 p-4 text-left text-xs text-red-200">
 {`# .env.local
 VITE_GOOGLE_MAPS_KEY=your_key_here`}
           </pre>
@@ -440,15 +482,15 @@ VITE_GOOGLE_MAPS_KEY=your_key_here`}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="relative rounded-2xl overflow-hidden border-2 border-cyan-500/30 shadow-2xl shadow-cyan-500/20"
+          className="relative overflow-hidden rounded-[28px] border border-red-500/20 shadow-2xl shadow-red-950/20"
         >
           {loading ? (
             <motion.div
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-zinc-950/80 backdrop-blur"
+              className="absolute inset-0 z-10 flex items-center justify-center rounded-[28px] bg-zinc-950/80 backdrop-blur"
             >
-              <Loader2 size={28} className="animate-spin text-cyan-400" />
+              <Loader2 size={28} className="animate-spin text-red-300" />
             </motion.div>
           ) : null}
           <div ref={mapRef} className="h-[500px] w-full bg-gradient-to-br from-slate-900 to-zinc-950" />
@@ -456,10 +498,10 @@ VITE_GOOGLE_MAPS_KEY=your_key_here`}
             <motion.div
               animate={{ opacity: [0.6, 1, 0.6] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="absolute top-4 right-4 flex items-center gap-2 rounded-full bg-cyan-500/20 backdrop-blur px-4 py-2 border border-cyan-500/50"
+              className="absolute right-4 top-4 flex items-center gap-2 rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 backdrop-blur"
             >
-              <div className="w-2 h-2 rounded-full bg-red-500" />
-              <span className="text-xs font-bold text-cyan-400">LIVE MODE ACTIVE</span>
+              <div className="h-2 w-2 rounded-full bg-red-500" />
+              <span className="text-xs font-bold text-red-200">LIVE MODE ACTIVE</span>
             </motion.div>
           ) : null}
         </motion.div>
@@ -469,17 +511,17 @@ VITE_GOOGLE_MAPS_KEY=your_key_here`}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card p-6 border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-purple-500/10"
+          className="card p-6 border border-red-500/20 bg-black/45"
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <p className="text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              <p className="text-xs font-bold uppercase tracking-widest text-red-300">
                 Selected Event
               </p>
               <h3 className="mt-2 font-display text-2xl font-bold text-white">{selected.title}</h3>
-              <p className="mt-3 text-sm text-cyan-300 font-semibold">{selected.location || "Pinned meetup spot"}</p>
-              <p className="mt-1 text-xs text-purple-300">{format(new Date(selected.date), "EEE, MMM d h:mm a")}</p>
-              <p className="mt-1.5 text-sm text-blue-300">
+              <p className="mt-3 text-sm font-semibold text-red-200">{selected.location || "Pinned meetup spot"}</p>
+              <p className="mt-1 text-xs text-zinc-400">{format(new Date(selected.date), "EEE, MMM d h:mm a")}</p>
+              <p className="mt-1.5 text-sm text-zinc-300">
                 {selected.participants?.length || 0} / {selected.maxParticipants || 20} runners
               </p>
             </div>
@@ -494,7 +536,7 @@ VITE_GOOGLE_MAPS_KEY=your_key_here`}
                   setSelected(null);
                   infoWindowRef.current?.close();
                 }}
-                className="px-4 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 transition"
+                className="rounded-xl border border-white/10 bg-zinc-900 px-4 py-3 transition hover:border-red-500/20 hover:bg-zinc-800"
               >
                 <X size={16} />
               </motion.button>
@@ -505,15 +547,15 @@ VITE_GOOGLE_MAPS_KEY=your_key_here`}
 
       <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <h2 className="mb-4 font-display text-2xl font-bold">
-          <GlowingText color="cyan">Upcoming Events</GlowingText>
+          <GlowingText color="soft">Upcoming events</GlowingText>
         </h2>
         {upcomingWithLocation.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="card p-8 text-center text-sm border-2 border-purple-500/30 bg-gradient-to-r from-purple-500/10 to-pink-500/10"
+            className="card p-8 text-center text-sm border border-red-500/20 bg-black/45"
           >
-            <p className="text-purple-300">No events with location data yet.</p>
+            <p className="text-red-200">No events with location data yet.</p>
             <p className="mt-2 text-xs text-zinc-400">Add a location when creating events to see them here.</p>
           </motion.div>
         ) : (
@@ -526,20 +568,20 @@ VITE_GOOGLE_MAPS_KEY=your_key_here`}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
                 whileHover={{ y: -8, scale: 1.02 }}
-                className={`p-5 rounded-xl text-left border-2 transition cursor-pointer overflow-hidden group ${
+                className={`group overflow-hidden rounded-[24px] border p-5 text-left transition ${
                   selected?._id === event._id
-                    ? "border-cyan-500/50 bg-gradient-to-br from-cyan-500/20 to-blue-500/20"
-                    : "border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-pink-500/10 hover:border-purple-500/50"
+                    ? "border-red-400/30 bg-red-500/12"
+                    : "border-white/10 bg-black/40 hover:border-red-500/20"
                 }`}
               >
-                <p className="font-bold text-white group-hover:text-cyan-300 transition">{event.title}</p>
-                <p className="mt-2 text-sm text-blue-300">{event.location || "Pinned meetup spot"}</p>
+                <p className="font-bold text-white transition group-hover:text-red-200">{event.title}</p>
+                <p className="mt-2 text-sm text-zinc-300">{event.location || "Pinned meetup spot"}</p>
                 <div className="mt-2 flex items-center justify-between text-xs">
-                  <p className="text-purple-300">{format(new Date(event.date), "MMM d")}</p>
-                  <p className="text-cyan-400 font-semibold">{event.participants?.length || 0} runners</p>
+                  <p className="text-zinc-500">{format(new Date(event.date), "MMM d")}</p>
+                  <p className="font-semibold text-red-200">{event.participants?.length || 0} runners</p>
                 </div>
                 {event.distanceKm != null ? (
-                  <p className="mt-3 text-xs text-emerald-300">{event.distanceKm.toFixed(1)} km away</p>
+                  <p className="mt-3 text-xs text-red-200">{event.distanceKm.toFixed(1)} km away</p>
                 ) : (
                   <p className="mt-3 text-xs text-zinc-500">Pin your location to sort by distance.</p>
                 )}

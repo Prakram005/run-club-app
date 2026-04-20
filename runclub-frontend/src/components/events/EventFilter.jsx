@@ -23,6 +23,7 @@ export default function EventFilter({ onFilter, onReset }) {
             : [...array, value]
         };
       }
+
       return { ...prev, [filterType]: value };
     });
   };
@@ -33,132 +34,122 @@ export default function EventFilter({ onFilter, onReset }) {
   };
 
   const resetFilters = () => {
-    setFilters({
+    const cleared = {
       difficulty: [],
       terrain: [],
       minDistance: "",
       maxDistance: "",
       pace: ""
-    });
+    };
+
+    setFilters(cleared);
     onReset?.();
   };
 
-  const activeFilterCount = Object.values(filters).reduce((count, val) => {
-    if (Array.isArray(val)) {
-      return count + val.length;
+  const activeFilterCount = Object.values(filters).reduce((count, value) => {
+    if (Array.isArray(value)) {
+      return count + value.length;
     }
-    return count + (val ? 1 : 0);
+
+    return count + (value ? 1 : 0);
   }, 0);
 
   return (
     <motion.div className="space-y-4">
       <motion.button
-        onClick={() => setExpanded(!expanded)}
-        className="flex items-center justify-between w-full px-4 py-3 rounded-xl bg-gradient-to-r from-red-950/30 to-black border border-red-600/40 hover:border-red-600/60 transition-all hover:shadow-red-glow-sm"
-        whileHover={{ scale: 1.02 }}
+        onClick={() => setExpanded((current) => !current)}
+        className="flex w-full items-center justify-between rounded-[24px] border border-red-500/30 bg-black/45 px-4 py-3.5 text-left backdrop-blur transition-all hover:border-red-400/40 hover:shadow-red-glow-sm"
+        whileHover={{ scale: 1.01 }}
       >
         <div className="flex items-center gap-3">
-          <span className="text-sm font-bold uppercase text-red-400">🔍 Filters</span>
-          {activeFilterCount > 0 && (
-            <span className="px-3 py-1 rounded-full bg-red-600/30 text-xs font-bold text-red-300 border border-red-600/20">
+          <span className="text-sm font-bold uppercase tracking-[0.26em] text-red-300">Filters</span>
+          {activeFilterCount > 0 ? (
+            <span className="rounded-full border border-red-400/20 bg-red-500/10 px-3 py-1 text-xs font-bold text-red-200">
               {activeFilterCount} active
             </span>
-          )}
+          ) : null}
         </div>
-        <ChevronDown
-          size={18}
-          className={`transition ${expanded ? "rotate-180" : ""} text-red-400`}
-        />
+
+        <ChevronDown size={18} className={`text-red-300 transition ${expanded ? "rotate-180" : ""}`} />
       </motion.button>
 
-      {expanded && (
+      {expanded ? (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card-elevated p-6 border border-red-600/40 space-y-6"
+          className="card-elevated space-y-6 border border-red-500/25 p-6"
         >
-          {/* Difficulty Filter */}
           <div>
-            <p className="text-sm font-bold uppercase text-red-400 mb-3">⛰️ Difficulty</p>
+            <p className="mb-3 text-sm font-bold uppercase tracking-[0.22em] text-red-300">Difficulty</p>
             <div className="flex flex-wrap gap-2">
               {["beginner", "intermediate", "advanced"].map((level) => (
                 <motion.button
                   key={level}
                   onClick={() => handleFilterChange("difficulty", level)}
-                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                  className={`rounded-2xl px-4 py-2 text-sm font-semibold transition ${
                     filters.difficulty.includes(level)
-                      ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-red-glow"
-                      : "bg-black/50 text-gray-400 border border-red-600/20 hover:border-red-600/50"
+                      ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-red-glow-sm"
+                      : "border border-white/10 bg-black/40 text-zinc-400 hover:border-red-500/30 hover:text-white"
                   }`}
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.04 }}
                 >
-                  {level === "beginner" && "🟢"}
-                  {level === "intermediate" && "🟡"}
-                  {level === "advanced" && "🔴"}
-                  {" " + level.charAt(0).toUpperCase() + level.slice(1)}
+                  {level.charAt(0).toUpperCase() + level.slice(1)}
                 </motion.button>
               ))}
             </div>
           </div>
 
-          {/* Terrain Filter */}
           <div>
-            <p className="text-sm font-bold uppercase text-green-400 mb-3">🏞️ Terrain</p>
+            <p className="mb-3 text-sm font-bold uppercase tracking-[0.22em] text-red-300">Terrain</p>
             <div className="flex flex-wrap gap-2">
               {["road", "trail", "mixed"].map((terrain) => (
                 <motion.button
                   key={terrain}
                   onClick={() => handleFilterChange("terrain", terrain)}
-                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                  className={`rounded-2xl px-4 py-2 text-sm font-semibold transition ${
                     filters.terrain.includes(terrain)
-                      ? "bg-green-600 text-white shadow-lg shadow-green-600/30"
-                      : "bg-black/50 text-gray-400 border border-green-600/20 hover:border-green-600/50"
+                      ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-red-glow-sm"
+                      : "border border-white/10 bg-black/40 text-zinc-400 hover:border-red-500/30 hover:text-white"
                   }`}
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.04 }}
                 >
-                  {terrain === "road" && "🛣️"}
-                  {terrain === "trail" && "🥾"}
-                  {terrain === "mixed" && "🔀"}
-                  {" " + terrain.charAt(0).toUpperCase() + terrain.slice(1)}
+                  {terrain.charAt(0).toUpperCase() + terrain.slice(1)}
                 </motion.button>
               ))}
             </div>
           </div>
 
-          {/* Distance Filter */}
           <div>
-            <p className="text-sm font-bold uppercase text-purple-400 mb-3">📏 Distance (km)</p>
+            <p className="mb-3 text-sm font-bold uppercase tracking-[0.22em] text-red-300">Distance (km)</p>
             <div className="grid gap-3 md:grid-cols-2">
               <input
                 type="number"
                 placeholder="Min"
                 value={filters.minDistance}
-                onChange={(e) => handleFilterChange("minDistance", e.target.value)}
+                onChange={(event) => handleFilterChange("minDistance", event.target.value)}
                 className="input px-4 py-2"
               />
               <input
                 type="number"
                 placeholder="Max"
                 value={filters.maxDistance}
-                onChange={(e) => handleFilterChange("maxDistance", e.target.value)}
+                onChange={(event) => handleFilterChange("maxDistance", event.target.value)}
                 className="input px-4 py-2"
               />
             </div>
           </div>
 
-          {/* Pace Filter */}
           <div>
-            <p className="text-sm font-bold uppercase text-blue-400 mb-3">⏱️ Pace</p>
+            <p className="mb-3 text-sm font-bold uppercase tracking-[0.22em] text-red-300">Pace</p>
             <input
               type="text"
               placeholder="e.g., 8:00/km"
               value={filters.pace}
-              onChange={(e) => handleFilterChange("pace", e.target.value)}
+              onChange={(event) => handleFilterChange("pace", event.target.value)}
               className="input w-full px-4 py-2"
             />
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-3">
             <motion.button
               onClick={applyFilters}
@@ -168,7 +159,7 @@ export default function EventFilter({ onFilter, onReset }) {
             >
               Apply Filters
             </motion.button>
-            {activeFilterCount > 0 && (
+            {activeFilterCount > 0 ? (
               <motion.button
                 onClick={resetFilters}
                 className="btn-subtle px-4 py-2"
@@ -176,10 +167,10 @@ export default function EventFilter({ onFilter, onReset }) {
               >
                 <X size={16} />
               </motion.button>
-            )}
+            ) : null}
           </div>
         </motion.div>
-      )}
+      ) : null}
     </motion.div>
   );
 }

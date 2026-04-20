@@ -17,6 +17,12 @@ export default {
           900: "#990000"
         },
         brand: {
+          DEFAULT: "#ff1a1a",
+          300: "#ff6666",
+          400: "#ff3333",
+          500: "#ff1a1a",
+          600: "#e60000",
+          700: "#990000",
           red: "#ff1a1a",
           "red-dark": "#cc0000",
           "red-light": "#ff6666",
@@ -27,8 +33,8 @@ export default {
         }
       },
       fontFamily: {
-        display: ["Poppins", "sans-serif"],
-        sans: ["Inter", "system-ui", "sans-serif"]
+        display: ["Space Grotesk", "sans-serif"],
+        sans: ["Plus Jakarta Sans", "system-ui", "sans-serif"]
       },
       boxShadow: {
         "red-glow": "0 0 20px rgba(255, 26, 26, 0.5)",

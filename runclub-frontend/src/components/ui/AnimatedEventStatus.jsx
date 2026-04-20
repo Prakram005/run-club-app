@@ -14,23 +14,23 @@ export default function AnimatedEventStatus({ event, isPast }) {
   if (isPast || isCompleted) {
     status = "Completed";
     Icon = CheckCircle;
-    bgColor = "bg-green-500/10";
-    textColor = "text-green-400";
+    bgColor = "border border-white/10 bg-white/5";
+    textColor = "text-zinc-300";
   } else if (isInProgress) {
     status = "In Progress";
     Icon = Play;
-    bgColor = "bg-blue-500/10";
-    textColor = "text-blue-400";
+    bgColor = "border border-red-400/20 bg-red-500/15";
+    textColor = "text-red-200";
   } else if (isStarting) {
     status = "Starting Soon";
     Icon = AlertCircle;
-    bgColor = "bg-orange-500/10";
-    textColor = "text-orange-400";
+    bgColor = "border border-red-400/20 bg-red-500/10";
+    textColor = "text-red-300";
   } else {
     status = "Upcoming";
     Icon = Clock;
-    bgColor = "bg-purple-500/10";
-    textColor = "text-purple-400";
+    bgColor = "border border-white/10 bg-white/5";
+    textColor = "text-zinc-300";
   }
 
   return (

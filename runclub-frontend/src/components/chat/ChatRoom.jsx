@@ -102,7 +102,7 @@ export default function ChatRoom({ eventId }) {
         <span className="text-xs text-zinc-500">{typing || " "}</span>
       </div>
 
-      <div className="max-h-80 space-y-3 overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/60 p-4">
+      <div className="max-h-80 space-y-3 overflow-y-auto rounded-2xl border border-white/10 bg-black/45 p-4">
         {loading ? <p className="text-sm text-zinc-500">Loading chat...</p> : null}
         {!loading && messages.length === 0 ? <p className="text-sm text-zinc-500">No messages yet.</p> : null}
         {messages.map((message) => {
@@ -111,10 +111,10 @@ export default function ChatRoom({ eventId }) {
             <div key={message._id || `${message.text}-${message.createdAt}`} className={mine ? "text-right" : ""}>
               <div
                 className={`inline-block max-w-[85%] rounded-2xl px-4 py-3 text-left ${
-                  mine ? "bg-brand-400 text-zinc-950" : "bg-zinc-800 text-zinc-100"
+                  mine ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-red-glow-sm" : "bg-zinc-900 text-zinc-100"
                 }`}
               >
-                <p className={`mb-1 text-xs font-semibold ${mine ? "text-zinc-900/70" : "text-zinc-400"}`}>
+                <p className={`mb-1 text-xs font-semibold ${mine ? "text-red-100/70" : "text-zinc-400"}`}>
                   {message.sender?.name || "Runner"}
                 </p>
                 <p className="text-sm">{message.text}</p>

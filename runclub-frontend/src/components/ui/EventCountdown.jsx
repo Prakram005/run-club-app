@@ -40,7 +40,7 @@ export default function EventCountdown({ eventDate }) {
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="rounded-lg bg-red-500/10 p-4 text-center text-red-400"
+        className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-center text-red-300"
       >
         <p className="text-sm font-semibold">Event is live or has ended!</p>
       </motion.div>
@@ -54,16 +54,16 @@ export default function EventCountdown({ eventDate }) {
         initial={{ scale: 1.2, opacity: 0, y: -10 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.8, opacity: 0, y: 10 }}
-        className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-brand-400 to-brand-500"
+        className="flex h-12 w-12 items-center justify-center rounded-xl border border-red-400/20 bg-gradient-to-br from-red-600 to-red-800 shadow-red-glow-sm"
       >
-        <span className="text-xl font-bold text-black">{String(value).padStart(2, "0")}</span>
+        <span className="text-xl font-bold text-white">{String(value).padStart(2, "0")}</span>
       </motion.div>
       <span className="text-xs uppercase tracking-widest text-zinc-400">{label}</span>
     </div>
   );
 
   return (
-    <div className="rounded-lg bg-zinc-900/50 p-4">
+    <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
       <p className="mb-3 text-center text-xs font-semibold uppercase tracking-widest text-zinc-400">
         Time Until Event
       </p>

@@ -28,18 +28,18 @@ export default function LiveParticipantCounter({ currentCount, maxCount, isLive 
           key={displayCount}
           initial={{ y: -10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="text-lg font-bold text-brand-400"
+          className="text-lg font-bold text-red-300"
         >
           {displayCount}/{maxCount}
         </motion.span>
       </div>
 
-      <div className="relative h-2 overflow-hidden rounded-full bg-zinc-800">
+      <div className="relative h-2 overflow-hidden rounded-full bg-zinc-900">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
           transition={{ duration: 0.5, type: "spring" }}
-          className={`h-full ${isFull ? "bg-red-500" : "bg-brand-400"}`}
+          className={`h-full ${isFull ? "bg-red-500" : "bg-gradient-to-r from-red-500 to-red-700"}`}
         />
       </div>
 
