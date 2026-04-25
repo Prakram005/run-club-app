@@ -100,7 +100,7 @@ export default function Layout() {
               </p>
             </motion.div>
 
-            <nav className="space-y-2 flex-1">
+            <nav className="space-y-2 flex-1 overflow-y-auto pr-2">
               {links.map(({ to, label, icon: Icon, end }, index) => (
                 <NavLink
                   key={to}
