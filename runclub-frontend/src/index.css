@@ -18,14 +18,14 @@
 
 html.light {
   color-scheme: light;
-  --bg-base: #ffffff;
-  --bg-elevated: rgba(245, 245, 245, 0.92);
-  --stroke-soft: rgba(0, 0, 0, 0.08);
-  --stroke-strong: rgba(255, 26, 26, 0.25);
+  --bg-base: #fef9f9;
+  --bg-elevated: rgba(254, 248, 248, 0.95);
+  --stroke-soft: rgba(255, 26, 26, 0.06);
+  --stroke-strong: rgba(255, 26, 26, 0.2);
   --accent-red: #ff1a1a;
-  --accent-red-soft: rgba(255, 26, 26, 0.12);
-  --text-primary: #1a1a1a;
-  --text-secondary: #666666;
+  --accent-red-soft: rgba(255, 26, 26, 0.1);
+  --text-primary: #2d1a1a;
+  --text-secondary: #704d4d;
 }
 
 html,
@@ -50,9 +50,9 @@ body {
 
 html.light body {
   background:
-    radial-gradient(circle at top left, rgba(255, 26, 26, 0.08), transparent 32%),
-    radial-gradient(circle at bottom right, rgba(255, 102, 102, 0.08), transparent 28%),
-    linear-gradient(135deg, #ffffff 0%, #fafafa 18%, #fff5f5 42%, #fafafa 68%, #ffffff 100%);
+    radial-gradient(circle at top left, rgba(255, 26, 26, 0.06), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(255, 102, 102, 0.05), transparent 28%),
+    linear-gradient(135deg, #fef9f9 0%, #fef5f5 18%, #fff0f0 42%, #fef5f5 68%, #fef9f9 100%);
   background-size: 160% 160%;
   animation: gradient-shift 18s ease infinite;
 }
@@ -408,67 +408,67 @@ html.light body {
 }
 
 html.light .card {
-  @apply border-gray-200 bg-[linear-gradient(145deg,rgba(255,255,255,0.8),rgba(249,249,249,0.6))] shadow-sm hover:border-red-400/40 hover:shadow-lg;
+  @apply border-red-200 bg-[linear-gradient(145deg,rgba(255,250,250,0.9),rgba(254,245,245,0.7))] shadow-sm hover:border-red-300/60 hover:shadow-lg;
 }
 
 html.light .card-elevated {
-  @apply border-red-200 bg-[linear-gradient(145deg,rgba(255,240,240,0.9),rgba(255,250,250,0.95))] shadow-md;
+  @apply border-red-300 bg-[linear-gradient(145deg,rgba(255,245,245,0.95),rgba(254,240,240,0.98))] shadow-md;
 }
 
 html.light .input {
-  @apply border-gray-300 bg-white/80 text-zinc-900 placeholder:text-gray-400 focus:border-red-500/80 focus:bg-white focus:ring-red-500/15;
+  @apply border-red-200 bg-white/70 text-zinc-900 placeholder:text-gray-500 focus:border-red-500 focus:bg-white focus:ring-red-500/20;
 }
 
 html.light .label {
-  @apply text-gray-600;
+  @apply text-gray-700;
 }
 
 html.light .btn-ghost {
-  @apply border-gray-300 bg-gray-100 text-gray-700 hover:border-red-400 hover:bg-red-50 hover:text-red-600;
+  @apply border-red-200 bg-red-50/60 text-gray-700 hover:border-red-400 hover:bg-red-100/70 hover:text-red-700;
 }
 
 html.light .btn-danger {
-  @apply border-red-200 bg-red-50 text-red-700 hover:bg-red-100;
+  @apply border-red-300 bg-red-100/70 text-red-800 hover:bg-red-200/70;
 }
 
 html.light .btn-subtle {
-  @apply border-gray-200 bg-gray-100 text-gray-700 hover:border-red-300 hover:bg-red-50 hover:text-red-700;
+  @apply border-red-200 bg-red-50/50 text-gray-700 hover:border-red-400 hover:bg-red-100/60 hover:text-red-700;
 }
 
 html.light .floating-control {
-  @apply border-gray-300 bg-white/90 text-zinc-900 placeholder:text-transparent focus:border-red-500 focus:bg-white focus:ring-red-500/15;
+  @apply border-red-200 bg-white/75 text-zinc-900 placeholder:text-transparent focus:border-red-500 focus:bg-white focus:ring-red-500/20;
 }
 
 html.light .floating-label {
-  @apply text-gray-600;
+  @apply text-gray-700;
 }
 
 html.light .floating-control:focus + .floating-label {
-  @apply text-red-600;
+  @apply text-red-700;
 }
 
 html.light .floating-label-active {
-  @apply text-red-600;
+  @apply text-red-700;
 }
 
 html.light .skeleton-block {
-  @apply bg-gray-200;
+  @apply bg-gray-300/40;
 }
 
 html.light .skeleton-block::after {
-  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.08), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 102, 102, 0.1), transparent);
 }
 
 html.light ::selection {
-  @apply bg-red-200 text-zinc-900;
+  @apply bg-red-300/40 text-zinc-900;
 }
 
 html.light .glass-effect {
-  @apply bg-white/40;
+  @apply bg-white/50;
 }
 
 html.light .glass-border {
-  @apply border-red-200;
+  @apply border-red-300;
 }
 
 .glow-red-sm {
