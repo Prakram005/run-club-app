@@ -16,6 +16,18 @@
   --text-secondary: #b3b3b3;
 }
 
+html.light {
+  color-scheme: light;
+  --bg-base: #ffffff;
+  --bg-elevated: rgba(245, 245, 245, 0.92);
+  --stroke-soft: rgba(0, 0, 0, 0.08);
+  --stroke-strong: rgba(255, 26, 26, 0.25);
+  --accent-red: #ff1a1a;
+  --accent-red-soft: rgba(255, 26, 26, 0.12);
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+}
+
 html,
 body,
 #root {
@@ -33,6 +45,15 @@ body {
   background-size: 160% 160%;
   color: var(--text-primary);
   font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  animation: gradient-shift 18s ease infinite;
+}
+
+html.light body {
+  background:
+    radial-gradient(circle at top left, rgba(255, 26, 26, 0.08), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(255, 102, 102, 0.08), transparent 28%),
+    linear-gradient(135deg, #ffffff 0%, #fafafa 18%, #fff5f5 42%, #fafafa 68%, #ffffff 100%);
+  background-size: 160% 160%;
   animation: gradient-shift 18s ease infinite;
 }
 
@@ -99,6 +120,19 @@ body::after {
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, rgba(255, 102, 102, 1), rgba(170, 0, 0, 1));
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: rgba(200, 200, 200, 0.3);
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(255, 102, 102, 0.7), rgba(255, 77, 77, 0.7));
+  border-radius: 5px;
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(255, 102, 102, 1), rgba(255, 26, 26, 1));
 }
 
 @layer base {
@@ -362,6 +396,79 @@ body::after {
 
 .glow-red-lg {
   @apply shadow-red-glow-lg;
+}
+
+/* Light Mode Styles */
+html.light {
+  @apply text-zinc-900;
+}
+
+html.light body {
+  @apply text-zinc-900;
+}
+
+html.light .card {
+  @apply border-gray-200 bg-[linear-gradient(145deg,rgba(255,255,255,0.8),rgba(249,249,249,0.6))] shadow-sm hover:border-red-400/40 hover:shadow-lg;
+}
+
+html.light .card-elevated {
+  @apply border-red-200 bg-[linear-gradient(145deg,rgba(255,240,240,0.9),rgba(255,250,250,0.95))] shadow-md;
+}
+
+html.light .input {
+  @apply border-gray-300 bg-white/80 text-zinc-900 placeholder:text-gray-400 focus:border-red-500/80 focus:bg-white focus:ring-red-500/15;
+}
+
+html.light .label {
+  @apply text-gray-600;
+}
+
+html.light .btn-ghost {
+  @apply border-gray-300 bg-gray-100 text-gray-700 hover:border-red-400 hover:bg-red-50 hover:text-red-600;
+}
+
+html.light .btn-danger {
+  @apply border-red-200 bg-red-50 text-red-700 hover:bg-red-100;
+}
+
+html.light .btn-subtle {
+  @apply border-gray-200 bg-gray-100 text-gray-700 hover:border-red-300 hover:bg-red-50 hover:text-red-700;
+}
+
+html.light .floating-control {
+  @apply border-gray-300 bg-white/90 text-zinc-900 placeholder:text-transparent focus:border-red-500 focus:bg-white focus:ring-red-500/15;
+}
+
+html.light .floating-label {
+  @apply text-gray-600;
+}
+
+html.light .floating-control:focus + .floating-label {
+  @apply text-red-600;
+}
+
+html.light .floating-label-active {
+  @apply text-red-600;
+}
+
+html.light .skeleton-block {
+  @apply bg-gray-200;
+}
+
+html.light .skeleton-block::after {
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.08), transparent);
+}
+
+html.light ::selection {
+  @apply bg-red-200 text-zinc-900;
+}
+
+html.light .glass-effect {
+  @apply bg-white/40;
+}
+
+html.light .glass-border {
+  @apply border-red-200;
 }
 
 .glow-red-sm {

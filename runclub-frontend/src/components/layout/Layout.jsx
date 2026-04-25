@@ -1,7 +1,8 @@
-import { Home, CalendarDays, Map, PlusSquare, Trophy, LogOut, Flame } from "lucide-react";
+import { Home, CalendarDays, Map, PlusSquare, Trophy, LogOut, Flame, Moon, Sun } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
 import { LiveNotifications, PageTransition } from "../ui";
 import NotificationsDropdown from "../ui/NotificationsDropdown";
 
@@ -15,18 +16,19 @@ const links = [
 
 export default function Layout() {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
 
   return (
-    <div className="app-shell text-white">
+    <div className="app-shell text-white dark:text-white light:text-zinc-900">
       <LiveNotifications />
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute left-[-6rem] top-20 h-64 w-64 rounded-full bg-red-500/12 blur-[120px]" />
-        <div className="absolute right-[-8rem] top-1/3 h-72 w-72 rounded-full bg-red-900/18 blur-[130px]" />
-        <div className="absolute bottom-[-8rem] left-1/3 h-64 w-64 rounded-full bg-red-700/12 blur-[110px]" />
+        <div className="absolute left-[-6rem] top-20 h-64 w-64 rounded-full bg-red-500/12 blur-[120px] dark:bg-red-500/12 light:bg-red-500/8" />
+        <div className="absolute right-[-8rem] top-1/3 h-72 w-72 rounded-full bg-red-900/18 blur-[130px] dark:bg-red-900/18 light:bg-red-500/6" />
+        <div className="absolute bottom-[-8rem] left-1/3 h-64 w-64 rounded-full bg-red-700/12 blur-[110px] dark:bg-red-700/12 light:bg-red-500/6" />
       </div>
 
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-black/55 backdrop-blur-2xl md:hidden">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-black/55 backdrop-blur-2xl dark:border-white/10 dark:bg-black/55 light:border-gray-200 light:bg-white/70 md:hidden">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-red-400/30 bg-gradient-to-br from-red-600 to-red-800 shadow-red-glow-sm">
@@ -39,7 +41,15 @@ export default function Layout() {
           </div>
 
           <div className="flex items-center gap-2">
-            <NotificationsDropdown />
+            <motion.button 
+              whileHover={{ scale: 1.1 }} 
+              whileTap={{ scale: 0.95 }} 
+              onClick={toggleTheme}
+              title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              className="btn-ghost px-3 py-2 text-xs"
+            >
+              {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+            </motion.button>
             <button onClick={logout} className="btn-ghost px-3 py-2 text-xs">
               <LogOut size={15} />
             </button>
@@ -146,10 +156,26 @@ export default function Layout() {
                 <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-zinc-500">Signed in</p>
                 <p className="mt-2 truncate font-semibold text-white">{user?.name || "Runner"}</p>
                 <p className="mt-1 truncate text-xs text-zinc-500">{user?.email}</p>
-                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={logout} className="btn-ghost mt-4 w-full gap-2 text-xs">
-                  <LogOut size={16} />
-                  Logout
-                </motion.button>
+                <div className="mt-4 flex gap-2">
+                  <motion.button 
+                    whileHover={{ scale: 1.03 }} 
+                    whileTap={{ scale: 0.97 }} 
+                    onClick={toggleTheme}
+                    title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                    className="btn-ghost flex-1 gap-2 text-xs"
+                  >
+                    {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+                  </motion.button>
+                  <motion.button 
+                    whileHover={{ scale: 1.03 }} 
+                    whileTap={{ scale: 0.97 }} 
+                    onClick={logout} 
+                    className="btn-ghost flex-1 gap-2 text-xs"
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </motion.button>
+                </div>
               </motion.div>
             </div>
           </div>
