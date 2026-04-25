@@ -15,13 +15,26 @@ export function ThemeProvider({ children }) {
     
     const html = document.documentElement;
     if (theme === "light") {
-      html.classList.add("light");
       html.classList.remove("dark");
+      html.classList.add("light");
     } else {
-      html.classList.add("dark");
       html.classList.remove("light");
+      html.classList.add("dark");
     }
   }, [theme]);
+
+  // Apply theme on mount
+  useEffect(() => {
+    const html = document.documentElement;
+    const saved = localStorage.getItem(THEME_KEY) || "dark";
+    if (saved === "light") {
+      html.classList.remove("dark");
+      html.classList.add("light");
+    } else {
+      html.classList.remove("light");
+      html.classList.add("dark");
+    }
+  }, []);
 
   const toggleTheme = () => {
     setTheme(prev => prev === "dark" ? "light" : "dark");

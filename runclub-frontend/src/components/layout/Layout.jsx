@@ -20,15 +20,15 @@ export default function Layout() {
   const location = useLocation();
 
   return (
-    <div className="app-shell text-white dark:text-white light:text-zinc-900">
+    <div className="app-shell text-white">
       <LiveNotifications />
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute left-[-6rem] top-20 h-64 w-64 rounded-full bg-red-500/12 blur-[120px] dark:bg-red-500/12 light:bg-red-500/8" />
-        <div className="absolute right-[-8rem] top-1/3 h-72 w-72 rounded-full bg-red-900/18 blur-[130px] dark:bg-red-900/18 light:bg-red-500/6" />
-        <div className="absolute bottom-[-8rem] left-1/3 h-64 w-64 rounded-full bg-red-700/12 blur-[110px] dark:bg-red-700/12 light:bg-red-500/6" />
+        <div className="absolute left-[-6rem] top-20 h-64 w-64 rounded-full bg-red-500/12 blur-[120px]" />
+        <div className="absolute right-[-8rem] top-1/3 h-72 w-72 rounded-full bg-red-900/18 blur-[130px]" />
+        <div className="absolute bottom-[-8rem] left-1/3 h-64 w-64 rounded-full bg-red-700/12 blur-[110px]" />
       </div>
 
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-black/55 backdrop-blur-2xl dark:border-white/10 dark:bg-black/55 light:border-gray-200 light:bg-white/70 md:hidden">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-black/55 backdrop-blur-2xl md:hidden">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-red-400/30 bg-gradient-to-br from-red-600 to-red-800 shadow-red-glow-sm">
