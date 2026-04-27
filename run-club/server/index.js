@@ -350,14 +350,11 @@ app.post("/events/:id/reviews", auth, async (req, res) => {
       return res.status(400).json({ message: "Reviews open after the run is completed" });
     }
 
-    if (String(event.createdBy) === String(req.user.id)) {
-      return res.status(403).json({ message: "Organisers cannot review their own run" });
-    }
-
     const joined = event.participants.some((entry) => String(entry) === String(req.user.id));
+    const ownsEvent = String(event.createdBy) === String(req.user.id);
 
-    if (!joined) {
-      return res.status(403).json({ message: "Only participants can review this run" });
+    if (!joined && !ownsEvent) {
+      return res.status(403).json({ message: "Only the organiser or joined runners can review this run" });
     }
 
     const rating = Number.parseInt(req.body.rating, 10);

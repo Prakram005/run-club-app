@@ -398,7 +398,7 @@ export default function EventDetailPage() {
   const count = event.participants?.length || 0;
   const reviews = event.reviews || [];
   const myReview = reviews.find((review) => String(getReviewUserId(review)) === myId);
-  const canReview = isPast && isJoined && !isCreator;
+  const canReview = isPast && (isJoined || isCreator);
   const averageRating = reviews.length
     ? reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / reviews.length
     : 0;
@@ -910,7 +910,7 @@ export default function EventDetailPage() {
             ) : (
               <div className="rounded-2xl border border-white/10 bg-black/35 p-4 text-sm text-zinc-400">
                 {isPast
-                  ? "Only runners who joined this run can leave a review."
+                  ? "Only the organiser or joined runners can leave a review."
                   : "Reviews open after the run is completed."}
               </div>
             )}
