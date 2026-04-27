@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { MagneticButton, AnimatedGradientBg, ScrollReveal } from "./EnhancedAnimations";
+import { MagneticButton, AnimatedGradientBg, ScrollReveal } from "../ui/EnhancedAnimations";
 
 /**
  * Modern animated hero section component

@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "build": "npm --prefix runclub-frontend run build"
+  },
   "dependencies": {
     "socket.io": "^4.8.3"
   }
