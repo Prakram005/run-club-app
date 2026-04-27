@@ -1,7 +1,8 @@
-import { Home, CalendarDays, Map, PlusSquare, Trophy, LogOut, Flame } from "lucide-react";
+import { Home, CalendarDays, Map, PlusSquare, Trophy, LogOut, Flame, Moon, Sun } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
 import { LiveNotifications, PageTransition } from "../ui";
 import NotificationsDropdown from "../ui/NotificationsDropdown";
 
@@ -15,6 +16,7 @@ const links = [
 
 export default function Layout() {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
 
   return (
@@ -39,7 +41,15 @@ export default function Layout() {
           </div>
 
           <div className="flex items-center gap-2">
-            <NotificationsDropdown />
+            <motion.button 
+              whileHover={{ scale: 1.1 }} 
+              whileTap={{ scale: 0.95 }} 
+              onClick={toggleTheme}
+              title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              className="btn-ghost px-3 py-2 text-xs"
+            >
+              {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+            </motion.button>
             <button onClick={logout} className="btn-ghost px-3 py-2 text-xs">
               <LogOut size={15} />
             </button>
@@ -100,59 +110,74 @@ export default function Layout() {
               </p>
             </motion.div>
 
-            <nav className="space-y-2 flex-1">
-              {links.map(({ to, label, icon: Icon, end }, index) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  end={end}
-                  className={({ isActive }) =>
-                    `group relative flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all duration-300 ${
-                      isActive
-                        ? "text-white"
-                        : "text-zinc-400 hover:text-white"
-                    }`
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      {isActive && (
-                        <motion.div
-                          layoutId="activeNav"
-                          className="absolute inset-0 rounded-2xl border border-red-400/25 bg-gradient-to-r from-red-500/20 to-red-900/10 shadow-red-glow"
-                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        />
-                      )}
-                      <div className={`relative z-10 transition-transform group-hover:scale-110 ${isActive ? "text-red-300" : ""}`}>
-                        <Icon size={20} />
-                      </div>
-                      <span className="relative z-10">{label}</span>
-                      {isActive && (
-                        <div className="absolute right-3 h-2 w-2 rounded-full bg-red-400 animate-pulse-red" />
-                      )}
-                    </>
-                  )}
-                </NavLink>
-              ))}
-            </nav>
+            <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-4">
+              <nav className="space-y-2">
+                {links.map(({ to, label, icon: Icon, end }, index) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    end={end}
+                    className={({ isActive }) =>
+                      `group relative flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all duration-300 ${
+                        isActive
+                          ? "text-white"
+                          : "text-zinc-400 hover:text-white"
+                      }`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {isActive && (
+                          <motion.div
+                            layoutId="activeNav"
+                            className="absolute inset-0 rounded-2xl border border-red-400/25 bg-gradient-to-r from-red-500/20 to-red-900/10 shadow-red-glow"
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                          />
+                        )}
+                        <div className={`relative z-10 transition-transform group-hover:scale-110 ${isActive ? "text-red-300" : ""}`}>
+                          <Icon size={20} />
+                        </div>
+                        <span className="relative z-10">{label}</span>
+                        {isActive && (
+                          <div className="absolute right-3 h-2 w-2 rounded-full bg-red-400 animate-pulse-red" />
+                        )}
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </nav>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="rounded-[28px] border border-red-400/20 bg-black/55 p-4 backdrop-blur-xl shadow-red-glow-sm"
-            >
-              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-zinc-500">Signed in</p>
-              <p className="mt-2 truncate font-semibold text-white">{user?.name || "Runner"}</p>
-              <p className="mt-1 truncate text-xs text-zinc-500">{user?.email}</p>
-              <div className="mt-4 flex gap-2">
-                <NotificationsDropdown />
-                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={logout} className="btn-ghost flex-1 gap-2 text-xs">
-                  <LogOut size={16} />
-                  Logout
-                </motion.button>
-              </div>
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="rounded-[28px] border border-red-400/20 bg-black/55 p-4 backdrop-blur-xl shadow-red-glow-sm"
+              >
+                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-zinc-500">Signed in</p>
+                <p className="mt-2 truncate font-semibold text-white">{user?.name || "Runner"}</p>
+                <p className="mt-1 truncate text-xs text-zinc-500">{user?.email}</p>
+                <div className="mt-4 flex gap-2">
+                  <motion.button 
+                    whileHover={{ scale: 1.03 }} 
+                    whileTap={{ scale: 0.97 }} 
+                    onClick={toggleTheme}
+                    title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                    className="btn-ghost flex-1 gap-2 text-xs"
+                  >
+                    {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+                  </motion.button>
+                  <motion.button 
+                    whileHover={{ scale: 1.03 }} 
+                    whileTap={{ scale: 0.97 }} 
+                    onClick={logout} 
+                    className="btn-ghost flex-1 gap-2 text-xs"
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </motion.button>
+                </div>
+              </motion.div>
+            </div>
           </div>
         </motion.aside>
 

@@ -16,6 +16,18 @@
   --text-secondary: #b3b3b3;
 }
 
+html.light {
+  color-scheme: light;
+  --bg-base: #fef9f9;
+  --bg-elevated: rgba(254, 248, 248, 0.95);
+  --stroke-soft: rgba(255, 26, 26, 0.06);
+  --stroke-strong: rgba(255, 26, 26, 0.2);
+  --accent-red: #ff1a1a;
+  --accent-red-soft: rgba(255, 26, 26, 0.1);
+  --text-primary: #2d1a1a;
+  --text-secondary: #704d4d;
+}
+
 html,
 body,
 #root {
@@ -34,6 +46,21 @@ body {
   color: var(--text-primary);
   font-family: "Plus Jakarta Sans", system-ui, sans-serif;
   animation: gradient-shift 18s ease infinite;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html.light body {
+  background:
+    radial-gradient(circle at top left, rgba(255, 26, 26, 0.06), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(255, 102, 102, 0.05), transparent 28%),
+    linear-gradient(135deg, #fef9f9 0%, #fef5f5 18%, #fff0f0 42%, #fef5f5 68%, #fef9f9 100%);
+  background-size: 160% 160%;
+  animation: gradient-shift 18s ease infinite;
+  color: var(--text-primary);
+}
+
+html.light {
+  color: var(--text-primary);
 }
 
 * {
@@ -101,6 +128,19 @@ body::after {
   background: linear-gradient(180deg, rgba(255, 102, 102, 1), rgba(170, 0, 0, 1));
 }
 
+html.light ::-webkit-scrollbar-track {
+  background: rgba(200, 200, 200, 0.3);
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(255, 102, 102, 0.7), rgba(255, 77, 77, 0.7));
+  border-radius: 5px;
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(255, 102, 102, 1), rgba(255, 26, 26, 1));
+}
+
 @layer base {
   body {
     @apply text-white antialiased;
@@ -124,7 +164,8 @@ body::after {
 
 @layer components {
   .app-shell {
-    @apply relative min-h-screen;
+    @apply relative min-h-screen transition-colors duration-300;
+    color: var(--text-primary);
   }
 
   .card {
@@ -362,6 +403,79 @@ body::after {
 
 .glow-red-lg {
   @apply shadow-red-glow-lg;
+}
+
+/* Light Mode Styles */
+html.light {
+  @apply text-zinc-900;
+}
+
+html.light body {
+  @apply text-zinc-900;
+}
+
+html.light .card {
+  @apply border-red-200 bg-[linear-gradient(145deg,rgba(255,250,250,0.9),rgba(254,245,245,0.7))] shadow-sm hover:border-red-300/60 hover:shadow-lg;
+}
+
+html.light .card-elevated {
+  @apply border-red-300 bg-[linear-gradient(145deg,rgba(255,245,245,0.95),rgba(254,240,240,0.98))] shadow-md;
+}
+
+html.light .input {
+  @apply border-red-200 bg-white/70 text-zinc-900 placeholder:text-gray-500 focus:border-red-500 focus:bg-white focus:ring-red-500/20;
+}
+
+html.light .label {
+  @apply text-gray-700;
+}
+
+html.light .btn-ghost {
+  @apply border-red-200 bg-red-50/60 text-gray-700 hover:border-red-400 hover:bg-red-100/70 hover:text-red-700;
+}
+
+html.light .btn-danger {
+  @apply border-red-300 bg-red-100/70 text-red-800 hover:bg-red-200/70;
+}
+
+html.light .btn-subtle {
+  @apply border-red-200 bg-red-50/50 text-gray-700 hover:border-red-400 hover:bg-red-100/60 hover:text-red-700;
+}
+
+html.light .floating-control {
+  @apply border-red-200 bg-white/75 text-zinc-900 placeholder:text-transparent focus:border-red-500 focus:bg-white focus:ring-red-500/20;
+}
+
+html.light .floating-label {
+  @apply text-gray-700;
+}
+
+html.light .floating-control:focus + .floating-label {
+  @apply text-red-700;
+}
+
+html.light .floating-label-active {
+  @apply text-red-700;
+}
+
+html.light .skeleton-block {
+  @apply bg-gray-300/40;
+}
+
+html.light .skeleton-block::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 102, 102, 0.1), transparent);
+}
+
+html.light ::selection {
+  @apply bg-red-300/40 text-zinc-900;
+}
+
+html.light .glass-effect {
+  @apply bg-white/50;
+}
+
+html.light .glass-border {
+  @apply border-red-300;
 }
 
 .glow-red-sm {
