@@ -58,3 +58,14 @@ export { default as SplashScreen } from "./SplashScreen";
 export { default as RouteSkeleton } from "./RouteSkeleton";
 export { FloatingInput, FloatingSelect, FloatingTextarea } from "./FloatingField";
 export { EngagingButton, EngagingCard, AchievementPulse, GlowingText, FloatingParticles } from "./EngagingUI";
+export { 
+  AnimatedCounter, 
+  RippleButton, 
+  ProgressRing, 
+  LivePulse, 
+  ScrollReveal, 
+  MagneticButton,
+  StaggerContainer,
+  StaggerItem,
+  AnimatedGradientBg
+} from "./EnhancedAnimations";
