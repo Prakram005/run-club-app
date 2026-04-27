@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { Calendar, MapPin, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, ChevronRight, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
@@ -26,6 +26,10 @@ export default function EventCard({ event, onRefresh, compact = false }) {
   const isCreator = String(event.createdBy) === String(user?.id);
   const isJoined = event.participants?.some((entry) => String(participantId(entry)) === String(user?.id));
   const isPast = new Date(event.date) < new Date();
+  const reviews = event.reviews || [];
+  const averageRating = reviews.length
+    ? reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / reviews.length
+    : 0;
 
   const handleJoinLeave = async (nextAction) => {
     setActionLoading(true);
@@ -237,17 +241,36 @@ export default function EventCard({ event, onRefresh, compact = false }) {
         </motion.div>
 
         {/* Participant counter with animation */}
-        <motion.div
-          className="rounded-[24px] border border-red-500/15 bg-black/35 p-4"
-          whileHover={{ borderColor: "rgba(255, 102, 102, 0.3)", backgroundColor: "rgba(0, 0, 0, 0.5)" }}
-          transition={{ duration: 0.3 }}
-        >
-          <LiveParticipantCounter
-            currentCount={event.participants?.length || 0}
-            maxCount={event.maxParticipants || 20}
-            isLive={true}
-          />
-        </motion.div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <motion.div
+            className="rounded-[24px] border border-red-500/15 bg-black/35 p-4"
+            whileHover={{ borderColor: "rgba(255, 102, 102, 0.3)", backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+            transition={{ duration: 0.3 }}
+          >
+            <LiveParticipantCounter
+              currentCount={event.participants?.length || 0}
+              maxCount={event.maxParticipants || 20}
+              isLive={true}
+            />
+          </motion.div>
+
+          <motion.div
+            className="rounded-[24px] border border-red-500/15 bg-black/35 p-4"
+            whileHover={{ borderColor: "rgba(255, 102, 102, 0.3)", backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="flex items-center gap-2 text-zinc-500">
+              <Star size={14} className="text-red-300" />
+              <span className="text-xs uppercase tracking-[0.22em]">Reviews</span>
+            </div>
+            <p className="mt-2 font-semibold text-white">
+              {reviews.length ? `${averageRating.toFixed(1)} / 5` : "No reviews"}
+            </p>
+            <p className="text-xs text-zinc-500">
+              {reviews.length} review{reviews.length === 1 ? "" : "s"}
+            </p>
+          </motion.div>
+        </div>
 
         {/* Action buttons with ripple effect */}
         <motion.div
