@@ -26,6 +26,8 @@ export const joinEvent = (id) => client.post(`/join-event/${id}`);
 export const leaveEvent = (id) => client.post(`/leave-event/${id}`);
 export const updateEvent = (id, payload) => client.put(`/events/${id}`, payload);
 export const deleteEvent = (id) => client.delete(`/events/${id}`);
+export const saveEventReview = (id, payload) => client.post(`/events/${id}/reviews`, payload);
+export const deleteEventReview = (eventId, reviewId) => client.delete(`/events/${eventId}/reviews/${reviewId}`);
 export const getChatMessages = (eventId) => client.get(`/chat/${eventId}`);
 export const sendChatMessage = (eventId, payload) => client.post(`/chat/${eventId}`, payload);
 export const getLeaderboard = () => client.get("/leaderboard");

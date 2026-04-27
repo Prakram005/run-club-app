@@ -237,7 +237,10 @@ app.post("/login", async (req, res) => {
 
 app.get("/events", async (req, res) => {
   try {
-    const events = await Event.find().populate("participants", "name").lean();
+    const events = await Event.find()
+      .populate("participants", "name")
+      .populate("reviews.user", "name")
+      .lean();
     return res.json(events);
   } catch (error) {
     return res.status(500).json({ message: error.message || "Failed to fetch events" });
@@ -332,6 +335,100 @@ app.post("/leave-event/:id", auth, async (req, res) => {
     return res.json(event);
   } catch (error) {
     return res.status(500).json({ message: error.message || "Failed to leave event" });
+  }
+});
+
+app.post("/events/:id/reviews", auth, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (new Date(event.date) > new Date()) {
+      return res.status(400).json({ message: "Reviews open after the run is completed" });
+    }
+
+    if (String(event.createdBy) === String(req.user.id)) {
+      return res.status(403).json({ message: "Organisers cannot review their own run" });
+    }
+
+    const joined = event.participants.some((entry) => String(entry) === String(req.user.id));
+
+    if (!joined) {
+      return res.status(403).json({ message: "Only participants can review this run" });
+    }
+
+    const rating = Number.parseInt(req.body.rating, 10);
+    const comment = req.body.comment?.trim() || "";
+
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: "Rating must be between 1 and 5" });
+    }
+
+    if (comment.length > 700) {
+      return res.status(400).json({ message: "Review comment must be 700 characters or less" });
+    }
+
+    const existingReview = event.reviews.find((review) => String(review.user) === String(req.user.id));
+
+    if (existingReview) {
+      existingReview.rating = rating;
+      existingReview.comment = comment;
+      existingReview.updatedAt = new Date();
+    } else {
+      event.reviews.push({
+        user: req.user.id,
+        rating,
+        comment
+      });
+    }
+
+    await event.save();
+    const updatedEvent = await Event.findById(req.params.id)
+      .populate("participants", "name")
+      .populate("reviews.user", "name")
+      .lean();
+
+    return res.status(existingReview ? 200 : 201).json(updatedEvent);
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to save review" });
+  }
+});
+
+app.delete("/events/:id/reviews/:reviewId", auth, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    const review = event.reviews.id(req.params.reviewId);
+
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    const ownsReview = String(review.user) === String(req.user.id);
+    const ownsEvent = String(event.createdBy) === String(req.user.id);
+
+    if (!ownsReview && !ownsEvent) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    review.deleteOne();
+    await event.save();
+
+    const updatedEvent = await Event.findById(req.params.id)
+      .populate("participants", "name")
+      .populate("reviews.user", "name")
+      .lean();
+
+    return res.json(updatedEvent);
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to delete review" });
   }
 });
 

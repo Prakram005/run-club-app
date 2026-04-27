@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
-import { ArrowLeft, Calendar, Crosshair, Edit2, Loader2, MapPin, Navigation, Search, Trash2, Users, X } from "lucide-react";
+import { ArrowLeft, Calendar, Crosshair, Edit2, Loader2, MapPin, Navigation, Search, Star, Trash2, X } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
@@ -32,6 +32,10 @@ const mapStyle = [
 
 function getParticipantId(entry) {
   return typeof entry === "object" ? entry?._id : entry;
+}
+
+function getReviewUserId(review) {
+  return typeof review?.user === "object" ? review.user?._id : review?.user;
 }
 
 function getEventCoordinates(event) {
@@ -70,6 +74,11 @@ export default function EventDetailPage() {
   const [editMapError, setEditMapError] = useState("");
   const [editLocationLoading, setEditLocationLoading] = useState(false);
   const [editSearchLoading, setEditSearchLoading] = useState(false);
+  const [reviewSaving, setReviewSaving] = useState(false);
+  const [reviewForm, setReviewForm] = useState({
+    rating: 5,
+    comment: ""
+  });
   const [form, setForm] = useState({
     title: "",
     date: "",
@@ -104,6 +113,20 @@ export default function EventDetailPage() {
   useEffect(() => {
     load();
   }, [id]);
+
+  useEffect(() => {
+    if (!event || !user?.id) {
+      setReviewForm({ rating: 5, comment: "" });
+      return;
+    }
+
+    const existingReview = event.reviews?.find((review) => String(getReviewUserId(review)) === String(user.id));
+
+    setReviewForm({
+      rating: existingReview?.rating || 5,
+      comment: existingReview?.comment || ""
+    });
+  }, [event, user]);
 
   useEffect(() => {
     if (!event) {
@@ -373,6 +396,12 @@ export default function EventDetailPage() {
   const isJoined = event.participants?.some((entry) => String(getParticipantId(entry)) === myId);
   const isPast = new Date(event.date) < new Date();
   const count = event.participants?.length || 0;
+  const reviews = event.reviews || [];
+  const myReview = reviews.find((review) => String(getReviewUserId(review)) === myId);
+  const canReview = isPast && isJoined && !isCreator;
+  const averageRating = reviews.length
+    ? reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / reviews.length
+    : 0;
 
   const handleSave = async () => {
     setSaving(true);
@@ -419,6 +448,35 @@ export default function EventDetailPage() {
       load();
     } catch (error) {
       toast.error(error.response?.data?.message || "Action failed.");
+    }
+  };
+
+  const handleReviewSubmit = async (submitEvent) => {
+    submitEvent.preventDefault();
+    setReviewSaving(true);
+
+    try {
+      const response = await api.saveEventReview(id, reviewForm);
+      setEvent(response.data);
+      toast.success(myReview ? "Review updated." : "Review posted.");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to save review.");
+    } finally {
+      setReviewSaving(false);
+    }
+  };
+
+  const handleReviewDelete = async (reviewId) => {
+    if (!window.confirm("Delete this review?")) {
+      return;
+    }
+
+    try {
+      const response = await api.deleteEventReview(id, reviewId);
+      setEvent(response.data);
+      toast.success("Review deleted.");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete review.");
     }
   };
 
@@ -647,6 +705,11 @@ export default function EventDetailPage() {
                   <AnimatedEventStatus event={event} isPast={isPast} />
                   {isCreator ? <Badge variant="brand">Organiser</Badge> : null}
                   {isJoined && !isCreator ? <Badge variant="green">Joined</Badge> : null}
+                  {reviews.length > 0 ? (
+                    <Badge variant="brand">
+                      {averageRating.toFixed(1)} stars ({reviews.length})
+                    </Badge>
+                  ) : null}
                 </div>
                 <h1 className="font-display text-3xl font-bold">{event.title}</h1>
               </div>
@@ -679,6 +742,25 @@ export default function EventDetailPage() {
             </div>
 
             {event.description ? <p className="mt-5 text-sm leading-6 text-zinc-400">{event.description}</p> : null}
+
+            {isPast ? (
+              <div className="mt-6 rounded-2xl border border-red-500/20 bg-black/35 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-red-300">Run Reviews</p>
+                    <p className="mt-1 text-sm text-zinc-400">
+                      {reviews.length
+                        ? `${averageRating.toFixed(1)} average from ${reviews.length} review${reviews.length === 1 ? "" : "s"}`
+                        : "No reviews yet."}
+                    </p>
+                  </div>
+                  <button onClick={() => setActiveTab("reviews")} className="btn-ghost gap-2">
+                    <Star size={15} />
+                    {canReview ? (myReview ? "Edit Review" : "Review Run") : "View Reviews"}
+                  </button>
+                </div>
+              </div>
+            ) : null}
 
             {!isPast && (
               <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -737,7 +819,7 @@ export default function EventDetailPage() {
       </section>
 
       <section>
-        <div className="mb-4 flex gap-2 rounded-2xl border border-white/10 bg-black/45 p-1">
+        <div className="mb-4 flex flex-wrap gap-2 rounded-2xl border border-white/10 bg-black/45 p-1">
           <button
             onClick={() => setActiveTab("chat")}
             className={`rounded-xl px-4 py-2 text-sm transition ${activeTab === "chat" ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-red-glow-sm" : "text-zinc-400 hover:text-white"}`}
@@ -764,12 +846,125 @@ export default function EventDetailPage() {
           >
             Activity
           </button>
+          <button
+            onClick={() => setActiveTab("reviews")}
+            className={`rounded-xl px-4 py-2 text-sm ${
+              activeTab === "reviews"
+                ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-red-glow-sm"
+                : "text-zinc-400 hover:text-white"
+            }`}
+          >
+            Reviews ({reviews.length})
+          </button>
         </div>
 
         {activeTab === "chat" ? (
           <ChatRoom eventId={id} />
         ) : activeTab === "activity" ? (
           <ActivityFeed eventId={id} />
+        ) : activeTab === "reviews" ? (
+          <div className="card space-y-5 p-5">
+            {canReview ? (
+              <form onSubmit={handleReviewSubmit} className="rounded-2xl border border-red-500/20 bg-black/35 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-bold text-white">{myReview ? "Update your review" : "Review this run"}</p>
+                    <p className="mt-1 text-xs text-zinc-500">Share how the organised run felt for other runners.</p>
+                  </div>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((rating) => (
+                      <button
+                        key={rating}
+                        type="button"
+                        onClick={() => setReviewForm((current) => ({ ...current, rating }))}
+                        className="rounded-full p-1 text-red-300 transition hover:scale-110"
+                        aria-label={`Rate ${rating} star${rating === 1 ? "" : "s"}`}
+                      >
+                        <Star
+                          size={22}
+                          fill={rating <= reviewForm.rating ? "currentColor" : "none"}
+                          className={rating <= reviewForm.rating ? "text-red-300" : "text-zinc-600"}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <textarea
+                  value={reviewForm.comment}
+                  onChange={(changeEvent) =>
+                    setReviewForm((current) => ({ ...current, comment: changeEvent.target.value }))
+                  }
+                  maxLength={700}
+                  rows={4}
+                  placeholder="What was the pace, route, vibe, or organisation like?"
+                  className="mt-4 w-full rounded-2xl border border-white/10 bg-zinc-950/70 px-4 py-3 text-sm text-white outline-none transition focus:border-red-400/50"
+                />
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                  <span className="text-xs text-zinc-500">{reviewForm.comment.length}/700</span>
+                  <button type="submit" disabled={reviewSaving} className="btn-primary">
+                    {reviewSaving ? "Saving..." : myReview ? "Update Review" : "Post Review"}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="rounded-2xl border border-white/10 bg-black/35 p-4 text-sm text-zinc-400">
+                {isPast
+                  ? "Only runners who joined this run can leave a review."
+                  : "Reviews open after the run is completed."}
+              </div>
+            )}
+
+            {reviews.length === 0 ? (
+              <p className="text-sm text-zinc-500">No reviews yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {reviews.map((review) => {
+                  const reviewUserId = getReviewUserId(review);
+                  const reviewerName = typeof review.user === "object" ? review.user.name : "Runner";
+                  const canDeleteReview = String(reviewUserId) === myId || isCreator;
+
+                  return (
+                    <motion.div
+                      key={review._id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="rounded-2xl border border-white/10 bg-zinc-950/45 p-4"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-white">
+                            {reviewerName} {String(reviewUserId) === myId ? "(you)" : ""}
+                          </p>
+                          <div className="mt-1 flex gap-1 text-red-300">
+                            {[1, 2, 3, 4, 5].map((rating) => (
+                              <Star
+                                key={rating}
+                                size={15}
+                                fill={rating <= review.rating ? "currentColor" : "none"}
+                                className={rating <= review.rating ? "text-red-300" : "text-zinc-700"}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        {canDeleteReview ? (
+                          <button
+                            onClick={() => handleReviewDelete(review._id)}
+                            className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 transition hover:text-red-300"
+                          >
+                            Delete
+                          </button>
+                        ) : null}
+                      </div>
+                      {review.comment ? (
+                        <p className="mt-3 text-sm leading-6 text-zinc-300">{review.comment}</p>
+                      ) : null}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         ) : (
           <div className="card p-5">
             {count === 0 ? (
