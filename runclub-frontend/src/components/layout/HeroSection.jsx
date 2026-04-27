@@ -1,6 +1,9 @@
+import { lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { MagneticButton, AnimatedGradientBg, ScrollReveal } from "../ui/EnhancedAnimations";
+
+const Hero3D = lazy(() => import("./Hero3D"));
 
 /**
  * Modern animated hero section component
@@ -18,7 +21,8 @@ export default function HeroSection({
   onSecondary = () => {},
   animate = true,
   gradient = true,
-  layout = "vertical" // "vertical" or "horizontal"
+  layout = "vertical", // "vertical" or "horizontal"
+  enable3D = true
 }) {
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -45,10 +49,15 @@ export default function HeroSection({
       initial={animate ? "hidden" : "visible"}
       animate="visible"
       variants={animate ? containerVariants : {}}
-      className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-red-950/30 to-black border-2 border-red-600/40 p-8 md:p-12 shadow-red-glow"
+      className="relative min-h-[420px] overflow-hidden rounded-3xl bg-gradient-to-br from-red-950/30 to-black border-2 border-red-600/40 p-8 md:min-h-[460px] md:p-12 shadow-red-glow"
     >
-      {/* Animated background */}
-      {gradient && <AnimatedGradientBg />}
+      {enable3D && (
+        <Suspense fallback={null}>
+          <Hero3D />
+        </Suspense>
+      )}
+      {gradient && !enable3D && <AnimatedGradientBg />}
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_72%_28%,rgba(255,36,36,0.22),transparent_34%),linear-gradient(115deg,rgba(0,0,0,0.28),rgba(0,0,0,0.78))]" />
 
       <div className="relative z-10">
         <div className={`flex flex-col gap-6 ${layout === "horizontal" ? "md:flex-row md:items-end md:justify-between" : ""}`}>
