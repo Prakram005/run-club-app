@@ -15,13 +15,6 @@ import {
 } from "../components/ui";
 import HeroSection from "../components/layout/HeroSection";
 import { AnimatedStat, StatCard } from "../components/ui/AnimatedStat";
-// New cinematic components
-import {
-  RunTrackingVisualization,
-  StatDisplay,
-  ScrollRevealContainer,
-  ScrollRevealItem,
-} from "../components/motionUIIndex";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../utils/api";
 
@@ -167,34 +160,6 @@ export default function DashboardPage() {
             </motion.div>
           </div>
         </motion.div>
-      </ScrollReveal>
-
-      {/* Live Run Tracking Section - New Cinematic Component */}
-      <ScrollReveal preset="fade-up" delay={0.2}>
-        <motion.section
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="space-y-4"
-        >
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-          >
-            <h2 className="font-display text-3xl font-bold text-gradient-neon">Today's Run Session</h2>
-            <p className="mt-2 text-sm text-gray-400">Live tracking with cinematic visualization</p>
-          </motion.div>
-
-          <RunTrackingVisualization
-            distance={10.73}
-            pace="3:59"
-            time="42:44"
-            calories={163}
-            elevation={120}
-            animated={true}
-          />
-        </motion.section>
       </ScrollReveal>
 
       {/* Featured Events */}
