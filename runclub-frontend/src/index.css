@@ -127,7 +127,7 @@ html {
   }
 
   .btn-primary {
-    @apply border-neon-green-glow bg-gradient-to-r from-neon-green/10 to-neon-blue/10 
+    @apply border-neon-glow bg-gradient-to-r from-neon-green/10 to-neon-blue/10 
            text-neon-green hover:text-neon-green-bright;
     box-shadow: 0 0 20px rgba(0, 255, 136, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1);
   }
@@ -150,7 +150,7 @@ html {
   }
 
   .btn-ghost {
-    @apply border-neon-glow-glow bg-transparent text-white hover:text-neon-green
+    @apply border-neon-glow bg-transparent text-white hover:text-neon-green
            hover:border-neon-green hover:shadow-neon-glow;
   }
 
@@ -300,14 +300,6 @@ body::after {
 .text-gradient-blue {
   @apply bg-gradient-to-r from-neon-blue via-neon-cyan to-neon-blue 
          bg-clip-text text-transparent;
-}
-
-  right: -9rem;
-  bottom: -7rem;
-  height: 22rem;
-  width: 22rem;
-  background: rgba(120, 0, 0, 0.24);
-  animation: float-orb 15s ease-in-out infinite reverse;
 }
 
 ::selection {
