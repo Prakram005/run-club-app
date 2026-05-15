@@ -8,13 +8,15 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          "vendor-react": ["react", "react-dom"],
-          "vendor-motion": ["framer-motion"],
-          "vendor-three": ["three"],
-          "vendor-gsap": ["gsap"]
+        manualChunks: (id) => {
+          if (id.includes("node_modules")) {
+            if (id.includes("three")) return "vendor-three";
+            if (id.includes("react")) return "vendor-react";
+            return "vendor";
+          }
         }
       }
-    }
+    },
+    chunkSizeWarningLimit: 1000
   }
 });
