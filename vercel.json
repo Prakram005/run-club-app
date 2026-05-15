@@ -7,10 +7,7 @@
       "settings": {
         "buildCommand": "npm run build",
         "framework": "vite",
-        "nodeVersion": "18.x",
-        "env": {
-          "VITE_API_URL": "https://run-club-api-ochre.vercel.app"
-        }
+        "nodeVersion": "18.x"
       }
     },
     {
@@ -22,6 +19,5 @@
         "nodeVersion": "18.x"
       }
     }
-  ],
-  "buildCommand": "npm run build"
+  ]
 }
