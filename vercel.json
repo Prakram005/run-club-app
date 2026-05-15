@@ -1,23 +1,12 @@
 {
   "version": 2,
-  "projects": [
+  "installCommand": "npm --prefix runclub-frontend install",
+  "buildCommand": "npm --prefix runclub-frontend run build",
+  "outputDirectory": "runclub-frontend/dist",
+  "rewrites": [
     {
-      "name": "run-club-frontend",
-      "path": "runclub-frontend",
-      "settings": {
-        "buildCommand": "npm run build",
-        "framework": "vite",
-        "nodeVersion": "18.x"
-      }
-    },
-    {
-      "name": "run-club-api",
-      "path": "run-club/server",
-      "settings": {
-        "buildCommand": "npm install",
-        "framework": "node",
-        "nodeVersion": "18.x"
-      }
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }

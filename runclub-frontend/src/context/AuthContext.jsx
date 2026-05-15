@@ -6,12 +6,19 @@ const AuthContext = createContext(null);
 const TOKEN_KEY = "runclub_token";
 const USER_KEY = "runclub_user";
 
-export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY) || "");
-  const [user, setUser] = useState(() => {
+function getStoredUser() {
+  try {
     const raw = localStorage.getItem(USER_KEY);
     return raw ? JSON.parse(raw) : null;
-  });
+  } catch {
+    localStorage.removeItem(USER_KEY);
+    return null;
+  }
+}
+
+export function AuthProvider({ children }) {
+  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY) || "");
+  const [user, setUser] = useState(getStoredUser);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
