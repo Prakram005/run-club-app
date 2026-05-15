@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD ? "https://run-club-api-ochre.vercel.app" : "http://localhost:5000");
 
 export const client = axios.create({
   baseURL: API_URL
