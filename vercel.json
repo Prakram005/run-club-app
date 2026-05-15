@@ -6,7 +6,8 @@
       "path": "runclub-frontend",
       "settings": {
         "buildCommand": "npm run build",
-        "framework": "vite"
+        "framework": "vite",
+        "nodeVersion": "18.x"
       }
     },
     {
@@ -14,8 +15,10 @@
       "path": "run-club/server",
       "settings": {
         "buildCommand": "npm install",
-        "framework": "node"
+        "framework": "node",
+        "nodeVersion": "18.x"
       }
     }
-  ]
+  ],
+  "buildCommand": "npm run build"
 }
